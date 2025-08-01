@@ -1,5 +1,5 @@
 from datetime import datetime
-from config.settings import NUM_PROJECTS_TO_SUMMARIZE
+from config.settings import NUM_PROJECTS_TO_SUMMARIZE, DAYS_TO_SKIP
 from .scraper import scrape_github_trending
 from .database import ProjectDatabase
 from .summarizer import get_summary_for_single_project, get_overview_intro
@@ -17,9 +17,9 @@ def job():
         return
 
     repos_to_summarize = []
-    existing_project_names = db.get_all_summarized_project_names()
+    existing_project_names = db.get_recent_project_names(days=DAYS_TO_SKIP)
     
-    print(f"🕵️‍♀️ Filtering for {NUM_PROJECTS_TO_SUMMARIZE} new projects from the top {len(all_trending_repos)} trending repos...")
+    print(f"🕵️‍♀️ Filtering for {NUM_PROJECTS_TO_SUMMARIZE} new projects from the top {len(all_trending_repos)} trending repos (skipping projects from the last {DAYS_TO_SKIP} days)...")
     for repo in all_trending_repos:
         if repo['name'] not in existing_project_names:
             repos_to_summarize.append(repo)

@@ -10,7 +10,7 @@ LLM_MODEL = os.getenv('LLM_MODEL', 'gpt-4-turbo')
 SCHEDULE_TIME = os.getenv('SCHEDULE_TIME', "09:00")
 NUM_PROJECTS_TO_SUMMARIZE = int(os.getenv('NUM_PROJECTS_TO_SUMMARIZE', 8))
 MAX_PROJECTS_TO_SCRAPE = int(os.getenv('MAX_PROJECTS_TO_SCRAPE', 25))
-
+DAYS_TO_SKIP = int(os.getenv('DAYS_TO_SKIP', 7))
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
 MD_DIR = os.path.join(OUTPUT_DIR, 'md')
@@ -45,18 +45,24 @@ SINGLE_PROJECT_PROMPT_TEMPLATE = """
 """
 
 OVERVIEW_PROMPT_TEMPLATE = """
-# 角色：顶尖技术观察员
+# 角色：顶尖技术分析师
 
-## 任务：根据今天值得关注的几个项目名称，生成一句引人注目的开篇导语
+## 任务：根据今日的热点项目列表，生成一段简明扼要的摘要。
 
 ### 今日焦点项目列表
-{project_names}
+{project_details}
 
 ### 要求
-- **风格**: 高度概括、充满激情、一语中的。
-- **格式**: 只输出一句话，用 `##` 作为 Markdown 标题。
-- **示例**: `## 🚀 AI 浪潮持续席卷，今天 GitHub 被几个颠覆性的开源模型刷屏了！`
-- **纯净度**: **只输出一句话的导语，不要任何其他文字。**
+- **风格**: 专业、精炼、信息导向。
+- **内容**:
+    1.  **主题概括**: 用一句话点出今天上榜项目的主要技术领域或趋势（例如：AI Infra、开发工具、多模态应用等）。
+    2.  **范围说明**: 概括项目范围，提及一些具体的例子，格式为“从...到...”。
+    3.  **结尾**: 固定以“具体项目摘要如下：”结尾，确保与后续内容无缝衔接。
+- **格式**: 输出一个简洁的段落，使用 Markdown `##` 作为主标题。
+- **示例**:
+    `## 今日热点：AI Infra 与多模态应用持续升温`
+    `今天的 GitHub 热榜涵盖了从底层的 AI 基础设施到上层的多模态应用等多个领域。具体项目摘要如下：`
+- **纯净度**: **只输出摘要部分，不要任何其他无关文字。**
 """
 
 HTML_TEMPLATE = """

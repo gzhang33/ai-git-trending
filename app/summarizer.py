@@ -28,8 +28,8 @@ def get_summary_for_single_project(project):
 
 def get_overview_intro(projects):
     print("🧠 Generating overview introduction...")
-    project_names = "\n".join([f"- {p['name']}" for p in projects])
-    prompt = OVERVIEW_PROMPT_TEMPLATE.format(project_names=project_names)
+    project_details = "\n".join([f"- {p['name']}: {p['description']}" for p in projects])
+    prompt = OVERVIEW_PROMPT_TEMPLATE.format(project_details=project_details)
     try:
         response = client.chat.completions.create(
             model=LLM_MODEL,
