@@ -1,5 +1,4 @@
 import os
-import re
 import markdown as md
 from datetime import datetime
 from config.settings import MD_DIR, HTML_DIR, HTML_TEMPLATE
@@ -30,8 +29,7 @@ tags: [{tags}]
         print(f"❌ Error writing Markdown file: {e}")
         return
     try:
-        content_for_html = re.sub(r'^---\s*[\s\S]*?^---\s*', '', summary_content, flags=re.MULTILINE)
-        html_body = md.markdown(content_for_html, extensions=['fenced_code', 'tables'])
+        html_body = md.markdown(summary_content, extensions=['fenced_code', 'tables'])
         final_html = HTML_TEMPLATE.format(title=title, content=f"<h1>{title}</h1>\n{html_body}")
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(final_html)

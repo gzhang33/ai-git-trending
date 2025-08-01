@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from config.settings import GITHUB_TRENDING_URL, MAX_PROJECTS_TO_SCRAPE
 
 def scrape_github_trending():
-    """抓取GitHub Trending页面的项目列表，包含星标数，并限制抓取数量。"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -17,7 +16,6 @@ def scrape_github_trending():
 
     soup = BeautifulSoup(response.text, 'html.parser')
     repo_list = []
-    # 【逻辑更新】使用切片来限制处理的文章数量，确保只抓取配置中定义的范围
     for repo in soup.find_all('article', class_='Box-row')[:MAX_PROJECTS_TO_SCRAPE]:
         title_element = repo.find('h2', class_='h3')
         if not title_element:

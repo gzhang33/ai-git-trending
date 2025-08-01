@@ -17,11 +17,10 @@ MD_DIR = os.path.join(OUTPUT_DIR, 'md')
 HTML_DIR = os.path.join(OUTPUT_DIR, 'html')
 DB_PATH = os.path.join(OUTPUT_DIR, 'reporter.db')
 
-# --- 抓取配置 ---
-GITHUB_TRENDING_URL = "https://github.com/trending"
+TRENDING_DATE_RANGE = os.getenv('TRENDING_DATE_RANGE', 'daily').lower()
 
-# --- Prompt 模板 ---
-# 1. 用于生成单项目深度点评的模板
+GITHUB_TRENDING_URL = f"https://github.com/trending?since={TRENDING_DATE_RANGE}"
+
 SINGLE_PROJECT_PROMPT_TEMPLATE = """
 # 角色：资深技术分析师与博主
 
@@ -37,7 +36,7 @@ SINGLE_PROJECT_PROMPT_TEMPLATE = """
 ### 写作要求
 - **风格**: 专业、风趣、有洞见，多使用 Emoji ✨💡🚀📈🤔 增加可读性。
 - **结构**: 必须包含以下几个部分，并使用 Markdown 加以组织：
-    - `### ✨ {name}`
+    - `### ✨ {name} ({stars}星)）`
     - `**一句话点评**: [用一句话精彩地概括其核心价值]`
     - `**💡 技术亮点与创新**: [深入分析其技术栈、实现方式或设计思路的过人之处]`
     - `**📈 潜在影响与应用**: [探讨它可能对行业带来的改变，或在哪些具体场景下能大放异彩]`
@@ -45,7 +44,6 @@ SINGLE_PROJECT_PROMPT_TEMPLATE = """
 - **纯净度**: **直接输出该项目的 Markdown 分析内容，不要任何额外的解释或客套话。**
 """
 
-# 2. 用于生成日报开篇导语的模板
 OVERVIEW_PROMPT_TEMPLATE = """
 # 角色：顶尖技术观察员
 
@@ -61,7 +59,6 @@ OVERVIEW_PROMPT_TEMPLATE = """
 - **纯净度**: **只输出一句话的导语，不要任何其他文字。**
 """
 
-# --- HTML 模板  ---
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="zh-CN">

@@ -1,5 +1,7 @@
 # GitHub Trending Reporter 🚀
 
+[English](./README-EN.md) | 简体中文
+
 **一个自动化分析 GitHub Trending 的机器人，为您每日精选、总结并生成技术洞察报告。**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -131,6 +133,7 @@ python run.py
 - `SCHEDULE_TIME`: （可选）每日任务执行的时间，格式为 "HH:MM"，默认为 `"09:00"`。
 - `NUM_PROJECTS_TO_SUMMARIZE`: （可选）每日分析的新项目数量，默认为 `8`。
 - `MAX_PROJECTS_TO_SCRAPE`: （可选）从 Trending 列表中筛选的项目范围，默认为 `25`。
+- `TRENDING_DATE_RANGE`: （可选）指定抓取的时间范围，可选值为 `daily`, `weekly`, `monthly`，默认为 `daily`。
 
 ### 通过 `config/settings.py` 文件配置
 

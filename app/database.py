@@ -11,7 +11,6 @@ class ProjectDatabase:
         return sqlite3.connect(self.db_path)
 
     def _create_table(self):
-        """创建数据库表（如果不存在），包含新字段"""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -28,9 +27,6 @@ class ProjectDatabase:
             print(f"❌ Database error (create_table): {e}")
 
     def get_all_summarized_project_names(self):
-        """
-        【新增方法】获取数据库中所有已总结项目的名称集合，用于快速去重。
-        """
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -38,10 +34,9 @@ class ProjectDatabase:
                 return {row[0] for row in cursor.fetchall()}
         except sqlite3.Error as e:
             print(f"❌ Database error (get_all_summarized_project_names): {e}")
-            return set() # 出现错误时返回空集合
+            return set()
 
     def add_summarized_project(self, project):
-        """将单个新总结的项目添加到数据库中。"""
         if not project:
             return
 
@@ -56,6 +51,5 @@ class ProjectDatabase:
                     project_data
                 )
                 conn.commit()
-            # print(f"💾 Saved project '{project['name']}' to database.") # 在循环中打印太频繁，可在main中统一处理
         except sqlite3.Error as e:
             print(f"❌ Database error (add_summarized_project): {e}")
