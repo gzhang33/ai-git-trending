@@ -13,8 +13,9 @@
 - **📈 每日追踪**：定时（默认每日上午9点）抓取 GitHub Trending 上的最新热门项目。
 - **🤖 智能筛选**：自动过滤已经分析过的项目，确保每天为您带来全新的技术视野。
 - **🧠 AI 深度分析**：利用大语言模型（LLM）对新项目进行逐一分析，产出包含“一句话点评”、“技术亮点”和“潜在影响”的深度洞察。
-- **📰 多格式报告**：自动生成精美的 Markdown 和 HTML 报告，方便阅读和分享。
-- **⚙️ 高度可配置**：几乎所有核心参数（如每日分析数量、抓取目标、LLM 模型、Prompt 模板等）都可以在 `config/settings.py` 中轻松定制。
+- **🌐 交互式 Web 界面**：通过美观的 Web 界面浏览、搜索和查看报告。
+- **📰 多格式报告**：自动生成精美的 Markdown 报告，并可在网页上动态渲染。
+- **⚙️ 高度可配置**：几乎所有核心参数（如每日分析数量、抓取目标、LLM 模型、Prompt 模板等）都可以在 `.env` 文件中轻松定制。
 - **💾 本地持久化**：使用 SQLite 数据库记录已分析过的项目，避免重复工作。
 
 ## 📝 产出示例
@@ -42,17 +43,19 @@
 **一句话点评**: ...
 ...
 ```
+![alt text](images/image.png "Web UI Example") 
 
-### HTML 报告 (`.html`)
 
-一份拥有现代化卡片式设计的 HTML 文件，提供更佳的视觉阅读体验。
+### 交互式 Web 界面
 
-![HTML Report Screenshot](https://user-images.githubusercontent.com/your-id/your-repo/assets/html-screenshot.png)  
-*(请将此图片替换为您自己的报告截图)*
+一份拥有现代化卡片式设计的 Web 界面，提供更佳的视觉阅读体验。
+
+![alt text](images/web.png)
 
 ## 🛠️ 技术栈
 
 - **Python 3.x**
+- **Web 框架**: `Flask`
 - **核心库**:
   - `requests` & `BeautifulSoup4`: 用于网页抓取。
   - `openai`: 用于与大语言模型 API 交互。
@@ -65,7 +68,7 @@
 
 1.  **克隆仓库**
     ```bash
-    git clone https://github.com/your-username/ai-trending.git
+    git clone https://github.com/lgy1027/ai-trending.git
     cd ai-trending
     ```
 
@@ -90,20 +93,25 @@
 
 ## 🏃‍♂️ 如何运行
 
-直接运行 `run.py` 即可启动项目。程序会首先执行一次任务，然后根据设定的时间表（默认为每天 `09:00`）定时运行。
+项目包含两个主要入口：
+
+### 1. 运行报告生成器
+
+运行 `run_reporter.py` 来抓取和分析项目，并生成每日报告。
 
 ```bash
-python run.py
+python run_reporter.py
 ```
 
-程序启动后，您会看到如下输出：
+### 2. 启动 Web 服务
+
+运行 `run_web.py` 来启动本地 Web 服务器，通过浏览器访问交互式界面。
+
+```bash
+python run_web.py
 ```
-🚀 Project [GitHub Trending Reporter] Started.
-🕒 Scheduled job to run every day at 09:00.
-🏃 Performing initial run immediately...
---- 🚀 Starting new job at 2025-08-01 12:30:00 ---
-...
-```
+
+服务启动后，默认可以在 `http://127.0.0.1:5000` 访问。
 
 ## 🐳 使用 Docker 运行
 
@@ -142,7 +150,12 @@ python run.py
 - `GITHUB_TRENDING_URL`: GitHub Trending 的 URL 地址。
 - `SINGLE_PROJECT_PROMPT_TEMPLATE`: 用于生成单个项目分析的 Prompt 模板。
 - `OVERVIEW_PROMPT_TEMPLATE`: 用于生成报告开篇导语的 Prompt 模板。
-- `HTML_TEMPLATE`: 生成 HTML 报告的模板。
+
+## 公众号
+
+欢迎关注，获取实时技术解析及前沿新闻
+
+<img src="images/wechat.png" width="300" height="300">
 
 ## 🤝 贡献指南
 

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Trending 报告</title>
+  <!-- 外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1', secondary: '#8b5cf6', accent: '#ec4899',
+            dark: '#1e293b', light: '#f8fafc'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fadeInUp': 'fadeInUp 0.5s ease forwards',
+            'fadeIn': 'fadeIn 0.3s ease'
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            fadeInUp: {
+              from: { opacity: 0, transform: 'translateY(20px)' },
+              to: { opacity: 1, transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              from: { opacity: 0 },
+              to: { opacity: 1 },
+            }
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-gradient { background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%); }
+      .glass-effect { backdrop-filter: blur(12px); background: rgba(30, 41, 59, 0.7); }
+      .text-gradient { background-clip: text; -webkit-background-clip: text; color: transparent; background-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899); }
+      .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+      .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1); }
+      .card-border { border: 1px solid rgba(255, 255, 255, 0.08); }
+      /* 滚动条样式 */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+      ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-dark to-slate-900 text-light min-h-screen font-sans">
+  <!-- 粒子背景效果 -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute top-[10%] left-[20%] w-64 h-64 bg-primary/20 rounded-full filter blur-3xl animate-pulse-slow"></div>
+    <div class="absolute top-[60%] right-[15%] w-80 h-80 bg-secondary/20 rounded-full filter blur-3xl animate-pulse-slow" style="animation-delay: 1s"></div>
+    <div class="absolute bottom-[10%] left-[30%] w-72 h-72 bg-accent/20 rounded-full filter blur-3xl animate-pulse-slow" style="animation-delay: 2s"></div>
+  </div>
+
+  <!-- 顶部导航栏 -->
+  <header class="glass-effect sticky top-0 z-50 border-b border-white/10">
+    <div class="container mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center">
+      <div class="flex items-center space-x-3 mb-4 md:mb-0">
+        <div class="bg-gradient-to-br from-primary to-secondary p-2 rounded-lg shadow-lg">
+          <i class="fa fa-github text-white text-2xl"></i>
+        </div>
+        <h1 class="text-[clamp(1.5rem,3vw,2.2rem)] font-bold">
+          <span class="text-gradient">GitHub Trending</span>
+        </h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="relative group">
+          <button class="bg-gradient-to-r from-primary to-secondary px-5 py-2 rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/30 flex items-center cursor-pointer">
+            <i class="fa fa-weixin mr-2"></i>扫码关注
+          </button>
+          <div class="absolute hidden group-hover:block right-0 w-40 bg-light p-2 rounded-lg shadow-xl z-50 top-full mt-2">
+            <img src="/images/wechat.png" alt="微信公众号二维码" class="w-full rounded">
+            <p class="text-center text-sm text-dark mt-1">扫码关注</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 py-12">
+    <!-- 页面标题和统计 -->
+    <section class="mb-12 text-center">
+      <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-bold mb-4">每日热门项目报告</h2>
+      <p class="text-slate-400 max-w-2xl mx-auto mb-8 text-lg">探索 GitHub 每日热门开源项目，点击日期卡片查看详细分析报告</p>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+        <div class="bg-slate-800/50 rounded-xl p-4 card-border hover-lift">
+          <div class="text-slate-400 text-sm mb-1">总报告数</div>
+          <div class="text-2xl font-bold text-white" id="total-reports">...</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-xl p-4 card-border hover-lift">
+          <div class="text-slate-400 text-sm mb-1">总项目数</div>
+          <div class="text-2xl font-bold text-white" id="total-projects">...</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-xl p-4 card-border hover-lift">
+          <div class="text-slate-400 text-sm mb-1">热门语言</div>
+          <div class="text-2xl font-bold text-white" id="top-language">...</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-xl p-4 card-border hover-lift">
+          <div class="text-slate-400 text-sm mb-1">本周新增</div>
+          <div class="text-2xl font-bold text-white" id="weekly-new">...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 日期卡片网格 -->
+    <section class="mb-16">
+      <div class="flex justify-between items-center mb-8">
+        <h3 class="text-2xl font-bold">报告列表</h3>
+        <div class="relative">
+          <input type="text" id="date-filter" placeholder="搜索日期 (YYYY-MM-DD)..." class="bg-slate-800/50 border border-white/10 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-primary w-full md:w-64">
+          <i class="fa fa-search absolute left-3 top-3 text-slate-400"></i>
+        </div>
+      </div>
+      
+      <div id="date-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- 日期卡片将通过JS动态生成 -->
+      </div>
+    </section>
+  </main>
+
+  <!-- 文档模态框 -->
+  <div id="document-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
+    <div class="bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-fadeIn">
+      <div class="p-6 border-b border-white/10 flex justify-between items-center">
+        <h3 id="modal-title" class="text-xl font-bold"></h3>
+        <button id="close-modal" class="p-2 rounded-full hover:bg-white/10 transition-colors"><i class="fa fa-times text-xl"></i></button>
+      </div>
+      <div id="modal-content" class="flex-grow overflow-y-auto p-8 prose prose-invert prose-slate max-w-none">
+        <div id="modal-loading" class="h-full flex flex-col items-center justify-center">
+          <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-slate-400">加载报告中...</p>
+        </div>
+        <div id="modal-document" class="hidden"></div>
+      </div>
+      <div class="p-6 border-t border-white/10 flex justify-between items-center">
+        <div id="modal-stats" class="text-slate-400 text-sm"></div>
+        <div class="flex space-x-3">
+          <button id="prev-report" class="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"><i class="fa fa-chevron-left mr-1"></i> 上一天</button>
+          <button id="next-report" class="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">下一天 <i class="fa fa-chevron-right ml-1"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 全局状态
+      let reports = [];
+      let currentReportIndex = -1;
+
+      // DOM 元素
+      const dateCardsContainer = document.getElementById('date-cards-container');
+      const dateFilterInput = document.getElementById('date-filter');
+      const documentModal = document.getElementById('document-modal');
+      const closeModalBtn = document.getElementById('close-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalContent = document.getElementById('modal-content');
+      const modalLoading = document.getElementById('modal-loading');
+      const modalDocument = document.getElementById('modal-document');
+      const prevReportBtn = document.getElementById('prev-report');
+      const nextReportBtn = document.getElementById('next-report');
+
+      // 初始化加载数据
+      async function initialize() {
+        await loadStats();
+        await loadReports();
+      }
+
+      // 加载统计数据
+      async function loadStats() {
+        try {
+          const response = await fetch('/api/stats');
+          const stats = await response.json();
+          document.getElementById('total-reports').textContent = stats.totalReports;
+          document.getElementById('total-projects').textContent = stats.totalProjects;
+          document.getElementById('top-language').textContent = stats.topLanguage;
+          document.getElementById('weekly-new').textContent = stats.weeklyNew;
+        } catch (error) {
+          console.error("Error loading stats:", error);
+        }
+      }
+
+      // 加载报告列表
+      async function loadReports() {
+        try {
+          const response = await fetch('/api/reports');
+          reports = await response.json();
+          renderDateCards(reports);
+        } catch (error) {
+          console.error("Error loading reports:", error);
+          dateCardsContainer.innerHTML = `<div class="col-span-full text-center text-red-400">加载报告列表失败</div>`;
+        }
+      }
+
+      // 渲染日期卡片
+      function renderDateCards(dataToRender) {
+        dateCardsContainer.innerHTML = '';
+        if (dataToRender.length === 0) {
+          dateCardsContainer.innerHTML = `<div class="col-span-full py-16 text-center"><i class="fa fa-calendar-o text-5xl text-slate-600 mb-4"></i><p class="text-slate-400">未找到报告</p></div>`;
+          return;
+        }
+        
+        dataToRender.forEach((item, index) => {
+          const date = new Date(item.isoDate);
+          const formattedDate = date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', weekday: 'short' });
+          const day = date.getDate();
+          
+          const card = document.createElement('div');
+          card.className = 'date-card bg-slate-800/50 rounded-2xl overflow-hidden card-border hover-lift cursor-pointer animate-fadeInUp';
+          card.dataset.date = item.isoDate;
+          card.style.animationDelay = `${index * 0.05}s`;
+          
+          card.innerHTML = `
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <div class="text-slate-400 text-sm">${formattedDate}</div>
+                  <div class="text-3xl font-bold mt-1">${day}</div>
+                </div>
+                ${index === 0 ? `<span class="bg-accent/20 text-accent text-xs px-2 py-1 rounded-full">最新</span>` : ''}
+              </div>
+              <div class="flex items-center text-slate-300 mb-5">
+                <i class="fa fa-cube mr-2 text-primary"></i>
+                <span>${item.projectCount} 个项目</span>
+              </div>
+            </div>
+            <div class="h-1 bg-gradient-to-r from-primary to-secondary"></div>`;
+          
+          card.addEventListener('click', () => openReport(item.isoDate));
+          dateCardsContainer.appendChild(card);
+        });
+      }
+
+      // 打开报告
+      async function openReport(isoDate) {
+        currentReportIndex = reports.findIndex(r => r.isoDate === isoDate);
+        if (currentReportIndex === -1) return;
+
+        documentModal.style.display = 'flex';
+        modalLoading.classList.remove('hidden');
+        modalDocument.classList.add('hidden');
+        
+        const report = reports[currentReportIndex];
+        modalTitle.textContent = `报告 - ${report.displayDate}`;
+
+        try {
+          const response = await fetch(`/api/report/${isoDate}`);
+          const data = await response.json();
+          if (data.error) throw new Error(data.error);
+          
+          modalDocument.innerHTML = marked.parse(data.mdContent);
+          modalLoading.classList.add('hidden');
+          modalDocument.classList.remove('hidden');
+        } catch (error) {
+          console.error("Error loading report content:", error);
+          modalDocument.innerHTML = `<div class="text-red-400">加载报告内容失败: ${error.message}</div>`;
+          modalLoading.classList.add('hidden');
+          modalDocument.classList.remove('hidden');
+        }
+        updateNavButtons();
+      }
+      
+      // 更新导航按钮状态
+      function updateNavButtons() {
+        prevReportBtn.disabled = currentReportIndex >= reports.length - 1;
+        nextReportBtn.disabled = currentReportIndex <= 0;
+      }
+
+      // 关闭模态框
+      function closeModal() {
+        documentModal.style.display = 'none';
+      }
+
+      // 导航
+      function navigate(direction) {
+        let newIndex = currentReportIndex;
+        if (direction === 'prev' && currentReportIndex < reports.length - 1) {
+          newIndex++;
+        } else if (direction === 'next' && currentReportIndex > 0) {
+          newIndex--;
+        }
+        if (newIndex !== currentReportIndex) {
+          openReport(reports[newIndex].isoDate);
+        }
+      }
+
+      // 事件监听
+      dateFilterInput.addEventListener('input', (e) => {
+        const filter = e.target.value.trim();
+        const filteredData = reports.filter(item => item.isoDate.includes(filter));
+        renderDateCards(filteredData);
+      });
+      
+      closeModalBtn.addEventListener('click', closeModal);
+      documentModal.addEventListener('click', (e) => {
+        if (e.target === documentModal) closeModal();
+      });
+      prevReportBtn.addEventListener('click', () => navigate('prev'));
+      nextReportBtn.addEventListener('click', () => navigate('next'));
+      
+      document.addEventListener('keydown', (e) => {
+        if (documentModal.style.display === 'flex') {
+          if (e.key === 'Escape') closeModal();
+          if (e.key === 'ArrowLeft') navigate('prev');
+          if (e.key === 'ArrowRight') navigate('next');
+        }
+      });
+      
+      initialize();
+    });
+  </script>
+</body>
+</html>

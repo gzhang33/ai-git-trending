@@ -19,6 +19,7 @@ class ProjectDatabase:
                         name TEXT PRIMARY KEY,
                         url TEXT,
                         stars INTEGER,
+                        language TEXT,
                         summary_date TEXT NOT NULL
                     )
                 """)
@@ -41,13 +42,13 @@ class ProjectDatabase:
             return
 
         today_str = date.today().isoformat()
-        project_data = (project['name'], project['url'], project['stars'], today_str)
+        project_data = (project['name'], project['url'], project['stars'], project.get('language', 'N/A'), today_str)
 
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT OR REPLACE INTO summarized_projects (name, url, stars, summary_date) VALUES (?, ?, ?, ?)",
+                    "INSERT OR REPLACE INTO summarized_projects (name, url, stars, language, summary_date) VALUES (?, ?, ?, ?, ?)",
                     project_data
                 )
                 conn.commit()

@@ -13,8 +13,9 @@ English | [简体中文](./README.md)
 - **📈 Daily Tracking**: Fetches the latest popular projects from GitHub Trending at a scheduled time (9 AM daily by default).
 - **🤖 Smart Filtering**: Automatically filters out projects that have already been analyzed, ensuring you get fresh technical perspectives every day.
 - **🧠 AI-Powered In-depth Analysis**: Uses a Large Language Model (LLM) to analyze each new project, producing deep insights including a "one-sentence review," "technical highlights," and "potential impact."
-- **📰 Multi-Format Reports**: Automatically generates beautiful Markdown and HTML reports for easy reading and sharing.
-- **⚙️ Highly Configurable**: Almost all core parameters (like the number of daily analyses, scrape targets, LLM model, prompt templates, etc.) can be easily customized.
+- **🌐 Interactive Web UI**: Browse, search, and view reports through a beautiful web interface.
+- **📰 Multi-Format Reports**: Automatically generates beautiful Markdown reports, dynamically rendered on the web page.
+- **⚙️ Highly Configurable**: Almost all core parameters (like the number of daily analyses, scrape targets, LLM model, prompt templates, etc.) can be easily customized in the `.env` file.
 - **💾 Local Persistence**: Uses an SQLite database to keep track of analyzed projects, avoiding repetitive work.
 
 ## 📝 Output Example
@@ -42,17 +43,18 @@ A clean, structured Markdown file suitable for direct publishing on various plat
 **One-Sentence Review**: ...
 ...
 ```
+![alt text](images/image.png) 
 
-### HTML Report (`.html`)
+### Interactive Web UI
 
 An HTML file with a modern, card-based design for a better visual reading experience.
 
-![HTML Report Screenshot](https://user-images.githubusercontent.com/your-id/your-repo/assets/html-screenshot.png)  
-*(Please replace this with a screenshot of your own report)*
+![alt text](images/web.png "Web UI Example")
 
 ## 🛠️ Tech Stack
 
 - **Python 3.x**
+- **Web Framework**: `Flask`
 - **Core Libraries**:
   - `requests` & `BeautifulSoup4`: For web scraping.
   - `openai`: For interacting with the Large Language Model API.
@@ -65,8 +67,8 @@ An HTML file with a modern, card-based design for a better visual reading experi
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/lgy1027/ai-git-trending.git
-    cd ai-git-trending
+    git clone https://github.com/lgy1027/ai-trending.git
+    cd ai-trending
     ```
 
 2.  **Install dependencies**
@@ -90,20 +92,25 @@ An HTML file with a modern, card-based design for a better visual reading experi
 
 ## 🏃‍♂️ How to Run
 
-Simply run `run.py` to start the project. The program will perform an initial run and then run on a schedule (default: every day at `09:00`).
+The project has two main entry points:
+
+### 1. Run the Report Generator
+
+Run `run_reporter.py` to scrape and analyze projects, generating daily reports.
 
 ```bash
-python run.py
+python run_reporter.py
 ```
 
-After starting the program, you will see output like this:
+### 2. Start the Web Service
+
+Run `run_web.py` to start the local web server and access the interactive interface through your browser.
+
+```bash
+python run_web.py
 ```
-🚀 Project [GitHub Trending Reporter] Started.
-🕒 Scheduled job to run every day at 09:00.
-🏃 Performing initial run immediately...
---- 🚀 Starting new job at 2025-08-01 12:30:00 ---
-...
-```
+
+Once the service is running, you can access it by default at `http://127.0.0.1:5000`.
 
 ## 🐳 Running with Docker
 
@@ -142,7 +149,6 @@ The following settings are relatively static, but you can modify them in `config
 - `GITHUB_TRENDING_URL`: The URL for GitHub Trending.
 - `SINGLE_PROJECT_PROMPT_TEMPLATE`: The prompt template for analyzing a single project.
 - `OVERVIEW_PROMPT_TEMPLATE`: The prompt template for generating the report's introduction.
-- `HTML_TEMPLATE`: The template for the HTML report.
 
 ## 🤝 Contributing
 
@@ -153,6 +159,12 @@ Contributions of any kind are welcome! If you have a great idea or find a bug, f
 3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4.  Push to the Branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
+
+## WeChat
+
+Welcome to follow us for real-time technical analysis and cutting-edge news.
+
+<img src="images/wechat.png" width="300" height="300">
 
 ## 📄 License
 
