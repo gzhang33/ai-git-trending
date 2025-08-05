@@ -1,11 +1,9 @@
 from flask import Flask, jsonify, render_template
 from config.settings import MD_DIR
 import os
-import markdown as md
 from datetime import datetime, timedelta
 from app.database import ProjectDatabase
 from app.analyzer import analyze_trends
-import json
 
 app = Flask(__name__, template_folder='templates', static_folder='images', static_url_path='/images')
 db = ProjectDatabase()
