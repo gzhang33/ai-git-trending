@@ -71,7 +71,7 @@ def get_stats():
             cursor.execute("SELECT COUNT(*) FROM summarized_projects")
             total_projects = cursor.fetchone()[0]
 
-            cursor.execute("SELECT language, COUNT(*) as count FROM summarized_projects WHERE language != 'N/A' GROUP BY language ORDER BY count DESC LIMIT 1")
+            cursor.execute("SELECT language, COUNT(*) as count FROM summarized_projects WHERE language != 'N/A' AND language IS NOT NULL GROUP BY language ORDER BY count DESC LIMIT 1")
             top_lang_row = cursor.fetchone()
             top_language = top_lang_row[0] if top_lang_row else "N/A"
 
@@ -81,12 +81,22 @@ def get_stats():
             
             total_reports = len([f for f in os.listdir(MD_DIR) if f.endswith('.md')])
 
+            # New Stats
+            cursor.execute("SELECT SUM(forks) FROM summarized_projects")
+            total_forks = cursor.fetchone()[0] or 0
+
+            cursor.execute("SELECT AVG(contributor_count) FROM summarized_projects WHERE contributor_count != 'N/A'")
+            avg_contributors = cursor.fetchone()[0] or 0
+            
             stats = {
                 "totalReports": total_reports,
                 "totalProjects": total_projects,
                 "topLanguage": top_language,
-                "weeklyNew": weekly_new
+                "weeklyNew": weekly_new,
+                "totalForks": f"{total_forks:,}", # Formatted with commas
+                "avgContributors": round(avg_contributors, 1)
             }
             return jsonify(stats)
     except Exception as e:
+        print(f"Error in /api/stats: {e}")
         return jsonify({"error": str(e)}), 500

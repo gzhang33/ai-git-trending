@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN')
 LLM_API_KEY = os.getenv('LLM_API_KEY')
 LLM_BASE_URL = os.getenv('LLM_BASE_URL')
 LLM_MODEL = os.getenv('LLM_MODEL', 'gpt-4-turbo')
@@ -31,7 +32,13 @@ SINGLE_PROJECT_PROMPT_TEMPLATE = """
 - **编程语言**: `{language}`
 - **项目描述**: `{description}`
 - **项目链接**: `{url}`
-- **今日星标数**: `{stars}`
+- **总星标数**: `{stars}`
+- **Forks**: `{forks}`
+- **贡献者数量**: `{contributor_count}`
+- **创建日期**: `{created_at}`
+- **最近更新**: `{updated_at}`
+- **开放Issue数**: `{open_issues}`
+- **Watchers**: `{watchers}`
 
 ### 写作要求
 - **风格**: 专业、风趣、有洞见，多使用 Emoji ✨💡🚀📈🤔 增加可读性。
