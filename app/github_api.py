@@ -54,6 +54,7 @@ def get_repo_details(repo_name):
             "watchers": data.get("subscribers_count", 0),
             "description": data.get("description") or "No description provided.",
             "language": data.get("language", "N/A"),
+            "tags": data.get("topics", []),  # Extract tags
             "contributor_count": contrib_count
         }
     except requests.RequestException as e:

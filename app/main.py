@@ -16,38 +16,52 @@ def job():
         print("⏹️ Job finished: No data scraped.")
         return
 
-    repos_to_summarize = []
-    existing_project_names = db.get_recent_project_names(days=DAYS_TO_SKIP)
+    snapshot_date = datetime.now().date()
+    print(f"💾 Ingesting {len(all_trending_repos)} projects for date: {snapshot_date.isoformat()}")
     
-    print(f"🕵️‍♀️ Filtering for {NUM_PROJECTS_TO_SUMMARIZE} new projects from the top {len(all_trending_repos)} trending repos (skipping projects from the last {DAYS_TO_SKIP} days)...")
+    # Add rank to each project
+    for i, repo_data in enumerate(all_trending_repos):
+        repo_data['rank'] = i + 1
+        
+    # Use the new batch insertion method
+    db.add_trending_snapshots(all_trending_repos, snapshot_date)
+    
+    print(f"✅ Successfully ingested {len(all_trending_repos)} snapshots into the database.")
+
+    # --- The summarization logic remains, but uses the new DB methods ---
+    
+    # Get project names that have been summarized recently
+    existing_project_names = db.get_all_summarized_project_names()
+    
+    repos_to_summarize = []
+    print(f"🕵️‍♀️ Filtering for {NUM_PROJECTS_TO_SUMMARIZE} new projects to summarize...")
     for repo in all_trending_repos:
         if repo['name'] not in existing_project_names:
             repos_to_summarize.append(repo)
-        if len(repos_to_summarize) == NUM_PROJECTS_TO_SUMMARIZE:
-            print(f"👍 Found {NUM_PROJECTS_TO_SUMMARIZE} new projects to summarize.")
+        if len(repos_to_summarize) >= NUM_PROJECTS_TO_SUMMARIZE:
+            print(f"👍 Found {len(repos_to_summarize)} new projects to summarize.")
             break
 
-    if len(repos_to_summarize) < NUM_PROJECTS_TO_SUMMARIZE:
-        print(f"⚠️ Found only {len(repos_to_summarize)} new projects. Not enough to meet the target of {NUM_PROJECTS_TO_SUMMARIZE}.")
-        print("⏹️ Job finished.")
-        return
+    if not repos_to_summarize:
+        print("✅ No new projects to summarize today.")
+    else:
+        print(f"📝 Summarizing {len(repos_to_summarize)} new projects...")
+        individual_summaries = []
+        for project in repos_to_summarize:
+            summary = get_summary_for_single_project(project)
+            if summary:
+                individual_summaries.append(summary)
+                # Also add it to the legacy summarized_projects table
+                db.add_summarized_project(project)
+                time.sleep(1) 
+            else:
+                print(f"❌ Warning: Failed to summarize '{project['name']}'. Skipping this project.")
 
-    individual_summaries = []
-    for project in repos_to_summarize:
-        summary = get_summary_for_single_project(project)
-        if summary:
-            individual_summaries.append(summary)
-            time.sleep(1) 
-        else:
-            print(f"❌ Critical error: Failed to summarize '{project['name']}'. Aborting today's job to ensure data consistency.")
-            return
-
-    intro = get_overview_intro(repos_to_summarize)
-    final_report = intro + "\n\n" + "\n\n---\n\n".join(individual_summaries)
-    
-    save_summary_files(final_report)
-    for project in repos_to_summarize:
-        db.add_summarized_project(project)
-    print(f"💾 Successfully saved {len(repos_to_summarize)} projects to database.")
+        if individual_summaries:
+            intro = get_overview_intro(repos_to_summarize)
+            final_report = intro + "\n\n" + "\n\n---\n\n".join(individual_summaries)
+            
+            save_summary_files(final_report)
+            print(f"💾 Successfully saved report for {len(repos_to_summarize)} projects.")
 
     print(f"--- ✅ Job finished at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")

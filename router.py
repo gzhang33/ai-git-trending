@@ -4,6 +4,8 @@ import os
 import markdown as md
 from datetime import datetime, timedelta
 from app.database import ProjectDatabase
+from app.analyzer import analyze_trends
+import json
 
 app = Flask(__name__, template_folder='templates', static_folder='images', static_url_path='/images')
 db = ProjectDatabase()
@@ -24,6 +26,10 @@ def get_report_data_from_filename(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/trends')
+def trends():
+    return render_template('trends.html')
 
 @app.route('/api/reports')
 def get_reports():
@@ -60,6 +66,16 @@ def get_report_content(date_str):
         
         return jsonify({"mdContent": md_content})
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/trends')
+def get_trends_data():
+    try:
+        # Default to 7 days, but can be parameterized
+        trends_data = analyze_trends(days=7)
+        return jsonify(trends_data)
+    except Exception as e:
+        print(f"Error in /api/trends: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/stats')
