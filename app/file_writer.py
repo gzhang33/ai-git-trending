@@ -13,14 +13,8 @@ def save_summary_files(summary_content):
     md_path = os.path.join(MD_DIR, md_filename)
     html_path = os.path.join(HTML_DIR, html_filename)
     title = f"GitHub 热点日报 ({today_str})"
-    tags = "GitHub, Trending, Tech, OpenSource"
-    md_frontmatter = f"""---
-title: "{title}"
-date: {today_str}
-tags: [{tags}]
----
-"""
-    full_md_content = f"{md_frontmatter}\n{summary_content}"
+    # 直接使用内容，不添加 YAML frontmatter
+    full_md_content = summary_content
     try:
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(full_md_content)
