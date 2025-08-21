@@ -1,11 +1,13 @@
 from flask import Flask, jsonify, render_template
+from flask_cors import CORS
 from config.settings import MD_DIR
 import os
 from datetime import datetime, timedelta
 from app.database import ProjectDatabase
 from app.analyzer import analyze_trends
 
-app = Flask(__name__, template_folder='templates', static_folder='images', static_url_path='/images')
+app = Flask(__name__, template_folder='../templates', static_folder='../images', static_url_path='/images')
+CORS(app)  # 启用CORS支持
 db = ProjectDatabase()
 
 def get_report_data_from_filename(filename):
@@ -35,17 +37,21 @@ def get_reports():
         files = os.listdir(MD_DIR)
         md_files = sorted([f for f in files if f.endswith('.md')], reverse=True)
         
-        reports_meta = []
+        reports = []
         for filename in md_files:
             data = get_report_data_from_filename(filename)
             if data:
                 with open(data['path'], 'r', encoding='utf-8') as f:
                     content = f.read()
                     project_count = content.count('### ✨')
-                data['projectCount'] = project_count if project_count > 0 else 4
-                reports_meta.append(data)
+                
+                report = {
+                    "date": data['isoDate'],
+                    "project_count": project_count if project_count > 0 else 4
+                }
+                reports.append(report)
 
-        return jsonify(reports_meta)
+        return jsonify(reports)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -58,11 +64,18 @@ def get_report_content(date_str):
         return jsonify({"error": "Report not found"}), 404
 
     try:
-        md_content = ""
         with open(filepath, 'r', encoding='utf-8') as f:
-            md_content = f.read()
+            content = f.read()
         
-        return jsonify({"mdContent": md_content})
+        project_count = content.count('### ✨')
+        
+        report = {
+            "date": date_str,
+            "content": content,
+            "project_count": project_count if project_count > 0 else 4
+        }
+        
+        return jsonify(report)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
