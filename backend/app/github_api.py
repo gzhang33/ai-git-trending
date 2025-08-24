@@ -1,18 +1,22 @@
 import requests
 from config.settings import GITHUB_API_TOKEN
+from config.logging_config import get_logger
+
+# 创建日志记录器
+logger = get_logger('github_api', 'INFO')
 
 def get_repo_details(repo_name):
     """
     Fetches detailed repository information from the GitHub API.
     """
     if not GITHUB_API_TOKEN:
-        print("⚠️ GitHub API token not configured. Skipping detailed data fetching.")
+        logger.warning("⚠️ GitHub API token not configured. Skipping detailed data fetching.")
         return None
 
     try:
         owner, repo = repo_name.split('/')
     except ValueError:
-        print(f"❌ Invalid repo name format: {repo_name}. Expected 'owner/repo'.")
+        logger.error(f"❌ Invalid repo name format: {repo_name}. Expected 'owner/repo'.")
         return None
 
     url = f"https://api.github.com/repos/{owner}/{repo}"
@@ -58,7 +62,7 @@ def get_repo_details(repo_name):
             "contributor_count": contrib_count
         }
     except requests.RequestException as e:
-        print(f"❌ Error fetching repo details for {repo_name} from GitHub API: {e}")
+        logger.error(f"❌ Error fetching repo details for {repo_name} from GitHub API: {e}")
         return None
 
 def get_entity_details(owner):
@@ -66,6 +70,7 @@ def get_entity_details(owner):
     Fetches detailed information about a GitHub user or organization.
     """
     if not GITHUB_API_TOKEN:
+        logger.warning("GitHub API token not configured. Skipping entity details fetching.")
         return None
 
     url = f"https://api.github.com/users/{owner}"
@@ -87,7 +92,7 @@ def get_entity_details(owner):
             "bio": data.get("bio") or "No bio provided."
         }
     except requests.RequestException as e:
-        print(f"❌ Error fetching entity details for {owner}: {e}")
+        logger.error(f"❌ Error fetching entity details for {owner}: {e}")
         return None
 
 def get_entity_repos(owner, sort_by='stargazers_count', limit=5):
@@ -95,6 +100,7 @@ def get_entity_repos(owner, sort_by='stargazers_count', limit=5):
     Fetches the top repositories for a GitHub user or organization.
     """
     if not GITHUB_API_TOKEN:
+        logger.warning("GitHub API token not configured. Skipping entity repos fetching.")
         return []
 
     url = f"https://api.github.com/users/{owner}/repos?type=owner&sort=updated&per_page=100"
@@ -123,5 +129,5 @@ def get_entity_repos(owner, sort_by='stargazers_count', limit=5):
         ]
         return top_repos
     except requests.RequestException as e:
-        print(f"❌ Error fetching repos for {owner}: {e}")
+        logger.error(f"❌ Error fetching repos for {owner}: {e}")
         return []

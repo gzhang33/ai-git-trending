@@ -2,6 +2,10 @@ import os
 import markdown as md
 from datetime import datetime
 from config.settings import MD_DIR, HTML_DIR, HTML_TEMPLATE
+from config.logging_config import get_logger
+
+# 创建日志记录器
+logger = get_logger('file_writer', 'INFO')
 
 def save_summary_files(summary_content):
     os.makedirs(MD_DIR, exist_ok=True)
@@ -18,15 +22,15 @@ def save_summary_files(summary_content):
     try:
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(full_md_content)
-        print(f"✅ Markdown file saved to: {md_path}")
+        logger.info(f"✅ Markdown file saved to: {md_path}")
     except IOError as e:
-        print(f"❌ Error writing Markdown file: {e}")
+        logger.error(f"❌ Error writing Markdown file: {e}")
         return
     try:
         html_body = md.markdown(summary_content, extensions=['fenced_code', 'tables'])
         final_html = HTML_TEMPLATE.format(title=title, content=f"<h1>{title}</h1>\n{html_body}")
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(final_html)
-        print(f"✅ HTML file saved to: {html_path}")
+        logger.info(f"✅ HTML file saved to: {html_path}")
     except Exception as e:
-        print(f"❌ Error creating or writing HTML file: {e}")
+        logger.error(f"❌ Error creating or writing HTML file: {e}")

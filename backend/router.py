@@ -1,12 +1,15 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify
 from flask_cors import CORS
 from config.settings import MD_DIR
+from config.logging_config import get_logger
 import os
 from datetime import datetime, timedelta
 from app.database import ProjectDatabase
-from app.analyzer import analyze_trends
 
-app = Flask(__name__, template_folder='../templates', static_folder='../images', static_url_path='/images')
+# 创建日志记录器
+logger = get_logger('router', 'INFO')
+
+app = Flask(__name__, static_folder='../images', static_url_path='/images')
 CORS(app)  # 启用CORS支持
 db = ProjectDatabase()
 
@@ -22,14 +25,6 @@ def get_report_data_from_filename(filename):
         }
     except (IndexError, ValueError):
         return None
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/trends')
-def trends():
-    return render_template('trends.html')
 
 @app.route('/api/reports')
 def get_reports():
@@ -53,6 +48,7 @@ def get_reports():
 
         return jsonify(reports)
     except Exception as e:
+        logger.error(f"Error in /api/reports: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/report/<date_str>')
@@ -61,6 +57,7 @@ def get_report_content(date_str):
     filepath = os.path.join(MD_DIR, filename)
 
     if not os.path.exists(filepath):
+        logger.warning(f"Report not found: {filepath}")
         return jsonify({"error": "Report not found"}), 404
 
     try:
@@ -77,16 +74,19 @@ def get_report_content(date_str):
         
         return jsonify(report)
     except Exception as e:
+        logger.error(f"Error in /api/report/{date_str}: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/trends')
 def get_trends_data():
     try:
+        # Import here to avoid circular imports
+        from app.analyzer import analyze_trends
         # Default to 7 days, but can be parameterized
         trends_data = analyze_trends(days=7)
         return jsonify(trends_data)
     except Exception as e:
-        print(f"Error in /api/trends: {e}")
+        logger.error(f"Error in /api/trends: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/stats')
@@ -125,5 +125,5 @@ def get_stats():
             }
             return jsonify(stats)
     except Exception as e:
-        print(f"Error in /api/stats: {e}")
+        logger.error(f"Error in /api/stats: {e}")
         return jsonify({"error": str(e)}), 500

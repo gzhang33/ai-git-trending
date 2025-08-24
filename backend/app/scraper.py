@@ -2,18 +2,22 @@ import requests
 from bs4 import BeautifulSoup
 from config.settings import GITHUB_TRENDING_URL, MAX_PROJECTS_TO_SCRAPE
 from app.github_api import get_repo_details
+from config.logging_config import get_logger
 import time
+
+# 创建日志记录器
+logger = get_logger('scraper', 'INFO')
 
 def scrape_github_trending():
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    print(f"⏳ Fetching top {MAX_PROJECTS_TO_SCRAPE} projects from GitHub Trending...")
+    logger.info(f"⏳ Fetching top {MAX_PROJECTS_TO_SCRAPE} projects from GitHub Trending...")
     try:
         response = requests.get(GITHUB_TRENDING_URL, headers=headers, timeout=20)
         response.raise_for_status()
     except requests.RequestException as e:
-        print(f"❌ Error fetching GitHub page: {e}")
+        logger.error(f"❌ Error fetching GitHub page: {e}")
         return None
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -31,7 +35,7 @@ def scrape_github_trending():
         # to ensure it's always correct.
         api_repo_name = "/".join(repo_url.split('/')[-2:])
         
-        print(f"🔍 Processing repository: {repo_name}")
+        logger.info(f"🔍 Processing repository: {repo_name}")
 
         # Scrape basic info
         description_element = repo_element.find('p', class_='col-9')
@@ -44,7 +48,7 @@ def scrape_github_trending():
         api_details = get_repo_details(api_repo_name)
         
         if api_details:
-            print(f"API details fetched for {repo_name}")
+            logger.info(f"API details fetched for {repo_name}")
             # Combine scraped data with API data
             repo_data = {
                 "name": repo_name,
@@ -62,7 +66,7 @@ def scrape_github_trending():
             }
         else:
             # Fallback to scraped data if API fails
-            print(f"API details fetch failed for {repo_name}, using scraped data as fallback.")
+            logger.warning(f"API details fetch failed for {repo_name}, using scraped data as fallback.")
             star_element = repo_element.find('a', href=f"{repo_url.replace('https://github.com','').strip()}/stargazers")
             repo_stars = 0
             if star_element:
@@ -89,5 +93,5 @@ def scrape_github_trending():
         repo_list.append(repo_data)
         time.sleep(1) # Respect API rate limits
 
-    print(f"✅ Successfully processed {len(repo_list)} repositories.")
+    logger.info(f"✅ Successfully processed {len(repo_list)} repositories.")
     return repo_list

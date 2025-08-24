@@ -1,7 +1,12 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# 获取项目根目录路径
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 加载项目根目录下的.env文件
+env_path = os.path.join(BASE_DIR, '.env')
+load_dotenv(env_path)
 
 GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN')
 LLM_API_KEY = os.getenv('LLM_API_KEY')
@@ -12,7 +17,8 @@ SCHEDULE_TIME = os.getenv('SCHEDULE_TIME', "09:00")
 NUM_PROJECTS_TO_SUMMARIZE = int(os.getenv('NUM_PROJECTS_TO_SUMMARIZE', 8))
 MAX_PROJECTS_TO_SCRAPE = int(os.getenv('MAX_PROJECTS_TO_SCRAPE', 25))
 DAYS_TO_SKIP = int(os.getenv('DAYS_TO_SKIP', 7))
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 设置输出目录路径 - 指向项目根目录下的output目录
 OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
 MD_DIR = os.path.join(OUTPUT_DIR, 'md')
 HTML_DIR = os.path.join(OUTPUT_DIR, 'html')

@@ -4,9 +4,13 @@ from config.settings import (
     SINGLE_PROJECT_PROMPT_TEMPLATE, OVERVIEW_PROMPT_TEMPLATE, ENTITY_PROMPT_TEMPLATE
 )
 from .github_api import get_entity_details, get_entity_repos
+from config.logging_config import get_logger
 import re
 import time
 from collections import Counter
+
+# 创建日志记录器
+logger = get_logger('summarizer', 'INFO')
 
 client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
 
@@ -23,24 +27,24 @@ def call_llm_with_retry(prompt, model, temperature, max_retries=3, delay=5):
                 temperature=temperature,
             )
             # Clean up thinking tags if they exist
-            pattern = r"^(.*?)</think>"
+            pattern = r"^(.*?)<tool_call>"
             clean_content = re.sub(pattern, "", response.choices[0].message.content, flags=re.DOTALL).strip()
             return clean_content
         except Exception as e:
             last_exception = e
-            print(f"Attempt {attempt + 1}/{max_retries} failed: {e}")
+            logger.warning(f"Attempt {attempt + 1}/{max_retries} failed: {e}")
             if attempt < max_retries - 1:
-                print(f"Retrying in {delay} seconds...")
+                logger.info(f"Retrying in {delay} seconds...")
                 time.sleep(delay)
     
-    print(f"❌ All {max_retries} attempts failed. Last error: {last_exception}")
+    logger.error(f"❌ All {max_retries} attempts failed. Last error: {last_exception}")
     return None
 
 def get_entity_summary(owner):
     """
     Generates a summary for a GitHub user or organization.
     """
-    print(f"👤 Fetching details for entity: {owner}")
+    logger.info(f"👤 Fetching details for entity: {owner}")
     entity_details = get_entity_details(owner)
     if not entity_details:
         return ""
@@ -67,16 +71,16 @@ def get_entity_summary(owner):
     if summary:
         return f"\n\n---\n\n### 👨‍💻 开发者/组织速览\n\n{summary}"
     
-    print(f"❌ Error generating entity summary for {owner}")
+    logger.error(f"❌ Error generating entity summary for {owner}")
     return ""
 
 def get_summary_for_single_project(project):
-    print(f"🧠 Analyzing project: {project['name']}...")
+    logger.info(f"🧠 Analyzing project: {project['name']}...")
     prompt = SINGLE_PROJECT_PROMPT_TEMPLATE.format(**project)
     
     project_summary = call_llm_with_retry(prompt, LLM_MODEL, 0.7)
     if not project_summary:
-        print(f"❌ Error calling LLM API for {project['name']}: Failed after retries.")
+        logger.error(f"❌ Error calling LLM API for {project['name']}: Failed after retries.")
         return None
 
     try:
@@ -88,7 +92,7 @@ def get_summary_for_single_project(project):
     return project_summary + entity_summary
 
 def get_overview_intro(projects):
-    print("🧠 Generating overview introduction...")
+    logger.info("🧠 Generating overview introduction...")
     project_details = "\n".join([f"- {p['name']}: {p.get('description', 'No description')}" for p in projects])
     prompt = OVERVIEW_PROMPT_TEMPLATE.format(project_details=project_details)
     
@@ -96,5 +100,5 @@ def get_overview_intro(projects):
     if overview:
         return overview
         
-    print("❌ Error calling LLM API for overview: Failed after retries.")
+    logger.error("❌ Error calling LLM API for overview: Failed after retries.")
     return "## 每日GitHub热点观察 🚀"

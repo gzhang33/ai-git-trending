@@ -81,12 +81,36 @@ docker run --env-file .env -p 5000:5000 trending-reporter
 
 安装依赖：
 ```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-项目包含两个独立的脚本：
-- **启动 Web 服务**: `python run_web.py` (访问 `http://127.0.0.1:5000`)
-- **手动触发报告生成**: `python run_reporter.py`
+启动后端服务（统一启动入口）：
+```bash
+# 运行完整服务（Web API + 定时任务）- 推荐
+cd backend
+python app.py
+
+# 仅运行Web API服务（用于前端开发）
+python app.py --mode web --debug
+
+# 仅运行定时报告生成器
+python app.py --mode reporter
+
+# 自定义端口和地址
+python app.py --host 0.0.0.0 --port 8080 --debug
+```
+
+启动前端服务（如需前端界面）：
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+访问地址：
+- **后端API**: `http://127.0.0.1:5001`
+- **前端界面**: `http://127.0.0.1:5173`
 
 ## ⚙️ 详细配置
 

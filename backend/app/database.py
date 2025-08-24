@@ -1,6 +1,10 @@
 import sqlite3
 from config.settings import DB_PATH
 from datetime import date
+from config.logging_config import get_logger
+
+# 创建日志记录器
+logger = get_logger('database', 'INFO')
 
 class ProjectDatabase:
     def __init__(self, db_path=DB_PATH):
@@ -52,7 +56,7 @@ class ProjectDatabase:
                     )""")
                 conn.commit()
         except sqlite3.Error as e:
-            print(f"❌ Database error (_create_schema): {e}")
+            logger.error(f"❌ Database error (_create_schema): {e}")
 
     # --- Refactored Dimension Helpers to use a passed cursor ---
 
@@ -124,7 +128,7 @@ class ProjectDatabase:
                     )
                 conn.commit()
         except sqlite3.Error as e:
-            print(f"❌ Database error (add_trending_snapshots): {e}")
+            logger.error(f"❌ Database error (add_trending_snapshots): {e}")
 
 
     # --- Methods for the old reporting feature (to keep it working) ---
@@ -135,7 +139,7 @@ class ProjectDatabase:
                 cursor.execute("SELECT name FROM summarized_projects")
                 return {row[0] for row in cursor.fetchall()}
         except sqlite3.Error as e:
-            print(f"❌ Database error (get_all_summarized_project_names): {e}")
+            logger.error(f"❌ Database error (get_all_summarized_project_names): {e}")
             return set()
 
     def add_summarized_project(self, project):
@@ -160,4 +164,4 @@ class ProjectDatabase:
                 )
                 conn.commit()
         except sqlite3.Error as e:
-            print(f"❌ Database error (add_summarized_project): {e}")
+            logger.error(f"❌ Database error (add_summarized_project): {e}")

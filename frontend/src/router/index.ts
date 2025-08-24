@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
+import Home from '../views/Home-simple.vue'
 
 const routes = [
   {
@@ -8,6 +8,14 @@ const routes = [
     component: Home,
     meta: {
       title: 'GitHub Trending Reporter'
+    }
+  },
+  {
+    path: '/projects/:date',
+    name: 'ProjectList',
+    component: () => import('../views/ProjectList.vue'),
+    meta: {
+      title: '项目列表 - GitHub Trending Reporter'
     }
   },
   {
