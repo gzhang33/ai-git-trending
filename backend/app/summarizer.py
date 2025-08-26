@@ -9,7 +9,6 @@ import re
 import time
 from collections import Counter
 
-# 创建日志记录器
 logger = get_logger('summarizer', 'INFO')
 
 client = OpenAI(api_key=LLM_API_KEY, base_url=LLM_BASE_URL)
@@ -26,8 +25,7 @@ def call_llm_with_retry(prompt, model, temperature, max_retries=3, delay=5):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
             )
-            # Clean up thinking tags if they exist
-            pattern = r"^(.*?)<tool_call>"
+            pattern = r".*?</think>|^\s*<tool_call>"
             clean_content = re.sub(pattern, "", response.choices[0].message.content, flags=re.DOTALL).strip()
             return clean_content
         except Exception as e:

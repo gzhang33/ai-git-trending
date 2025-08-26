@@ -4,9 +4,7 @@ from dotenv import load_dotenv
 # 获取项目根目录路径
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# 加载项目根目录下的.env文件
-env_path = os.path.join(BASE_DIR, '.env')
-load_dotenv(env_path)
+load_dotenv()
 
 GITHUB_API_TOKEN = os.getenv('GITHUB_API_TOKEN')
 LLM_API_KEY = os.getenv('LLM_API_KEY')

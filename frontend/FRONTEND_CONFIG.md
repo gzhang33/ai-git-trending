@@ -8,29 +8,29 @@
 
 **环境变量配置**: `frontend/.env`
 ```env
-VITE_API_BASE_URL=http://localhost:5002
+VITE_API_BASE_URL=http://localhost:5001
 ```
 
 ### 📁 涉及的文件
 
 1. **[vite.config.ts](./vite.config.ts)** - Vite开发服务器代理配置
    - 使用环境变量 `VITE_API_BASE_URL`
-   - 默认值: `http://localhost:5002`
+   - 默认值: `http://localhost:5001`
 
 2. **[src/api/reports.ts](./src/api/reports.ts)** - API调用配置
    - 使用环境变量 `VITE_API_BASE_URL`
-   - 默认值: `http://localhost:5002`
+   - 默认值: `http://localhost:5001`
 
 3. **[src/views/Home.vue](./src/views/Home.vue)** - 首页组件
-   - API_BASE_URL: `http://localhost:5002` ✅
+   - API_BASE_URL: `http://localhost:5001` ✅
 
 4. **[src/views/Home-simple.vue](./src/views/Home-simple.vue)** - 简化首页
-   - API_BASE_URL: `http://localhost:5002` ✅ (已更新)
+   - API_BASE_URL: `http://localhost:5001` ✅ (已更新)
 
 ### 🔄 配置优先级
 
 1. **环境变量** - `VITE_API_BASE_URL`
-2. **默认值** - `http://localhost:5002`
+2. **默认值** - `http://localhost:5001`
 
 ### 🚀 使用方式
 

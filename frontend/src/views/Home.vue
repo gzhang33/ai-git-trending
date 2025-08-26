@@ -455,7 +455,7 @@ import { getReports, type Report } from '../api/reports'
 const reports = ref<Report[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
-const API_BASE_URL = 'http://localhost:5002'
+const API_BASE_URL = 'http://localhost:5001'
 
 // 获取报告列表
 async function fetchReports() {
