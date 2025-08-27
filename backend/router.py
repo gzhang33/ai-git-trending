@@ -1,6 +1,6 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
-from config.settings import MD_DIR
+from config.settings import MD_DIR, HTML_DIR
 from config.logging_config import get_logger
 import os
 from datetime import datetime, timedelta
@@ -76,6 +76,24 @@ def get_report_content(date_str):
     except Exception as e:
         logger.error(f"Error in /api/report/{date_str}: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/download/<date_str>/<format>')
+def download_report(date_str, format):
+    if format not in ['html', 'md']:
+        return jsonify({"error": "Invalid format specified"}), 400
+
+    dir_path = HTML_DIR if format == 'html' else MD_DIR
+    filename = f"github_trending_{date_str}.{format}"
+    
+    if not os.path.exists(os.path.join(dir_path, filename)):
+        logger.warning(f"Download request for non-existent file: {filename}")
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        return send_from_directory(dir_path, filename, as_attachment=True)
+    except Exception as e:
+        logger.error(f"Error downloading file {filename}: {e}")
+        return jsonify({"error": "Could not process file download"}), 500
 
 @app.route('/api/trends')
 def get_trends_data():
