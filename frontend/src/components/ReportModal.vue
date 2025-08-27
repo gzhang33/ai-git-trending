@@ -8,24 +8,53 @@
         <!-- 模态框头部 -->
         <header class="relative p-4 lg:p-6 border-b border-white/10 bg-gradient-to-r from-slate-800/50 to-slate-700/50">
           <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
-              <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
+              <div class="flex items-center space-x-3 lg:space-x-4 flex-1 min-w-0">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 style="background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899); background-clip: text; -webkit-background-clip: text; color: transparent;" class="text-lg lg:text-2xl font-bold truncate">
+                    GitHub 热门项目报告
+                  </h3>
+                  <p class="text-xs lg:text-sm text-slate-400 mt-1 truncate">
+                    {{ formatDate(report.date) }}
+                  </p>
+                </div>
               </div>
-              <div class="min-w-0 flex-1">
-                <h3 style="background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899); background-clip: text; -webkit-background-clip: text; color: transparent;" class="text-lg lg:text-2xl font-bold truncate">
-                  GitHub 热门项目报告
-                </h3>
-                <p class="text-xs lg:text-sm text-slate-400 mt-1 truncate">
-                  {{ formatDate(report.date) }}
-                </p>
-              </div>
-            </div>
             
             <div class="flex items-center space-x-2 lg:space-x-3 flex-shrink-0">
-              <!-- 全屏按钮 -->
+                <!-- 导出按钮 - 添加在标题区域 -->
+                <div class="relative mr-2">
+                  <button
+                    @click="showHeaderExportMenu = !showHeaderExportMenu"
+                    class="btn-icon"
+                    title="导出报告"
+                  >
+                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                  </button>
+                  
+                  <!-- 导出菜单 -->
+                  <div v-if="showHeaderExportMenu" class="absolute top-full right-0 mt-2 w-40 glass-card rounded-xl py-2 shadow-xl z-50">
+                    <button @click="exportReport('md')" class="export-menu-item">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      Markdown
+                    </button>
+                    <button @click="exportReport('html')" class="export-menu-item">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                      </svg>
+                      HTML
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 全屏按钮 -->
               <button
                 @click="toggleFullscreen"
                 class="btn-icon hidden lg:flex"
@@ -242,6 +271,7 @@ const markdownContainer = ref<HTMLElement>()
 const contentContainer = ref<HTMLElement>()
 const exportDropdown = ref<HTMLElement>()
 const showExportMenu = ref(false)
+const showHeaderExportMenu = ref(false)
 const isFullscreen = ref(false)
 const scrollProgress = ref(0)
 const showBackToTop = ref(false)
@@ -306,6 +336,18 @@ function handleKeydown(e: KeyboardEvent) {
 function handleOutsideClick(e: Event) {
   if (showExportMenu.value && exportDropdown.value && !exportDropdown.value.contains(e.target as Node)) {
     showExportMenu.value = false
+  }
+  
+  // 关闭标题区域的导出菜单
+  const headerExportButton = document.querySelector('[title="导出报告"]')
+  const headerExportMenu = document.querySelector('.relative.mr-2 > div')
+  
+  if (showHeaderExportMenu.value && 
+      headerExportButton && 
+      headerExportMenu && 
+      !headerExportButton.contains(e.target as Node) && 
+      !headerExportMenu.contains(e.target as Node)) {
+    showHeaderExportMenu.value = false
   }
 }
 
@@ -484,7 +526,7 @@ function generateQuickNavigation() {
   })
   
   // 如果没有标题，隐藏导航区域
-  const navSection = quickNavContainer.closest('.mb-8')
+  const navSection = quickNavContainer.closest('.mb-8') as HTMLElement | null
   if (navSection) {
     navSection.style.display = headers.length > 0 ? 'block' : 'none'
   }

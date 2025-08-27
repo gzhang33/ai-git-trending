@@ -165,7 +165,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
 }>()
 
@@ -201,7 +201,7 @@ const loadProjectDetails = async () => {
 
 const handleBackdropClick = (event: MouseEvent) => {
   if (event.target === event.currentTarget) {
-    $emit('close')
+    emit('close')
   }
 }
 

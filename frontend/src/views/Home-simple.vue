@@ -633,11 +633,11 @@ const themes = ref([
     label: '浅色主题',
     icon: 'svg'
   },
-  {
-    value: 'test',
-    label: '测试主题',
-    icon: 'svg'
-  },
+  // {
+  //   value: 'test',
+  //   label: '测试主题',
+  //   icon: 'svg'
+  // },
   {
     value: 'auto',
     label: '跟随系统',
