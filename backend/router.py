@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from config.settings import MD_DIR, HTML_DIR
 from config.logging_config import get_logger
@@ -98,10 +98,23 @@ def download_report(date_str, format):
 @app.route('/api/trends')
 def get_trends_data():
     try:
+        # Get 'days' from query parameters, default to 7
+        days_str = request.args.get('days', '7')
+        try:
+            days = int(days_str)
+            # Add some validation, e.g., allow only specific values
+            allowed_days = [7, 30, 182, 365]
+            if days not in allowed_days:
+                # Or just cap it, for now let's stick to allowed values for simplicity
+                days = 7
+        except ValueError:
+            days = 7
+
         # Import here to avoid circular imports
         from app.analyzer import analyze_trends
-        # Default to 7 days, but can be parameterized
-        trends_data = analyze_trends(days=7)
+        
+        logger.info(f"📊 Received trends request for {days} days.")
+        trends_data = analyze_trends(days=days)
         return jsonify(trends_data)
     except Exception as e:
         logger.error(f"Error in /api/trends: {e}")

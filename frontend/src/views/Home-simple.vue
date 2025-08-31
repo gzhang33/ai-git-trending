@@ -5,7 +5,7 @@
       <div class="flex items-center space-x-4">
         <!-- 技术趋势分析按钮 -->
         <button
-          @click="() => { showTrendsModal = true; loadTrendsData(); }"
+          @click="() => { showTrendsModal = true; loadTrendsData(7); }"
           class="glass-card px-4 py-2 rounded-lg text-slate-300 hover:text-white transition-all duration-200 hover:scale-105 border border-white/10 hover:border-blue-400/50 backdrop-blur-sm flex items-center space-x-2"
         >
           <i class="fa fa-bar-chart"></i>
@@ -229,7 +229,7 @@
               最近热门项目
             </h3>
             <button 
-              @click="() => { showTrendsModal = true; loadTrendsData(); }"
+              @click="() => { showTrendsModal = true; loadTrendsData(7); }"
               class="text-blue-400 hover:text-blue-300 transition-colors text-sm flex items-center"
             >
               查看更多
@@ -396,7 +396,7 @@
               </svg>
             </div>
             <div class="text-red-400 mb-4">{{ trendsError }}</div>
-            <button @click="loadTrendsData" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
+            <button @click="() => loadTrendsData(selectedTrendDays)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
               重试
             </button>
           </div>
@@ -408,10 +408,27 @@
               <p class="text-slate-400 max-w-2xl mx-auto">基于历史数据分析 GitHub 的技术热点、窜升项目和语言趋势。</p>
             </div>
             
+            <!-- 时间范围选择器 -->
+            <div class="flex justify-center items-center gap-2 mb-8">
+              <button
+                v-for="range in trendTimeRanges"
+                :key="range.value"
+                @click="() => loadTrendsData(range.value)"
+                :class="[
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border',
+                  selectedTrendDays === range.value
+                    ? 'bg-blue-500 border-blue-400 text-white scale-105 shadow-lg'
+                    : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600/50 hover:border-slate-500'
+                ]"
+              >
+                {{ range.label }}
+              </button>
+            </div>
+
             <!-- 热门项目和语言 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div class="bg-slate-700/50 p-6 rounded-2xl border border-slate-600">
-                <h3 class="text-xl font-bold mb-4">热门项目 (近7天)</h3>
+                <h3 class="text-xl font-bold mb-4">热门项目 (近{{ selectedTrendDays }}天)</h3>
                 <div v-if="trendsData.most_frequent_projects?.length > 0" class="space-y-4">
                   <div v-for="(project, index) in trendsData.most_frequent_projects.slice(0, 6)" :key="index" 
                        class="bg-slate-800/50 p-4 rounded-xl border border-slate-600/50 hover:border-blue-400/50 transition-all duration-200 hover:transform hover:scale-[1.02] group">
@@ -455,7 +472,7 @@
               </div>
               
               <div class="bg-slate-700/50 p-6 rounded-2xl border border-slate-600">
-                <h3 class="text-xl font-bold mb-4">热门语言 (近7天)</h3>
+                <h3 class="text-xl font-bold mb-4">热门语言 (近{{ selectedTrendDays }}天)</h3>
                 <div v-if="trendsData.most_frequent_languages?.length > 0" class="space-y-3">
                   <div v-for="(language, index) in trendsData.most_frequent_languages.slice(0, 8)" :key="index" 
                        class="flex items-center justify-between bg-slate-800/50 p-3 rounded-lg">
@@ -469,7 +486,7 @@
             
             <!-- 窜升项目 -->
             <div class="bg-slate-700/50 p-6 rounded-2xl border border-slate-600">
-              <h3 class="text-xl font-bold mb-4">星标窜升最快项目 (近7天)</h3>
+              <h3 class="text-xl font-bold mb-4">星标窜升最快项目 (近{{ selectedTrendDays }}天)</h3>
               <div v-if="trendsData.surging_projects?.length > 0" class="space-y-4">
                 <div v-for="(project, index) in trendsData.surging_projects" :key="index" 
                      class="bg-slate-800/50 p-4 rounded-xl border border-slate-600/50 hover:border-green-400/50 transition-all duration-200 hover:transform hover:scale-[1.02] group">
@@ -518,12 +535,12 @@
                       </div>
                     </div>
                     
-                    <!-- 增长百分比 -->
+                      <!-- 增长百分比 -->
                     <div class="text-right">
                       <div class="text-green-400 font-bold text-sm">
                         +{{ Math.round((project.star_increase / project.start_stars) * 100) }}%
                       </div>
-                      <div class="text-xs text-slate-500">7天增长</div>
+                      <div class="text-xs text-slate-500">{{ selectedTrendDays }}天增长</div>
                     </div>
                   </div>
                 </div>
@@ -595,6 +612,13 @@ const showTrendsModal = ref(false)
 const trendsData = ref<any>(null)
 const trendsLoading = ref(false)
 const trendsError = ref<string | null>(null)
+const selectedTrendDays = ref(7)
+const trendTimeRanges = [
+  { label: '近7天', value: 7 },
+  { label: '近1个月', value: 30 },
+  { label: '近半年', value: 182 },
+  { label: '近1年', value: 365 }
+]
 
 // 主题相关状态
 const currentTheme = ref<string>('dark')
@@ -871,13 +895,14 @@ onUnmounted(() => {
 })
 
 // 加载趋势数据
-async function loadTrendsData() {
+async function loadTrendsData(days: number = 7) {
+  selectedTrendDays.value = days
   try {
     trendsLoading.value = true
     trendsError.value = null
-    console.log('📈 开始获取趋势数据...')
+    console.log(`📈 开始获取趋势数据... (days: ${days})`)
     
-    const response = await fetch(`${API_BASE_URL}/api/trends`)
+    const response = await fetch(`${API_BASE_URL}/api/trends?days=${days}`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
