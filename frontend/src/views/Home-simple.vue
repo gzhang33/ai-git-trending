@@ -551,7 +551,7 @@
           
           <div v-else class="text-center py-16">
             <div class="text-slate-400 mb-4">点击下方按钮加载趋势数据</div>
-            <button @click="loadTrendsData" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
+            <button @click="() => loadTrendsData()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
               加载趋势数据
             </button>
           </div>
