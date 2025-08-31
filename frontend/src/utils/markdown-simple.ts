@@ -48,18 +48,20 @@ export function enhanceMarkdownDisplay(container: HTMLElement) {
   })
   
   // 为外部链接添加图标
-  const links = container.querySelectorAll('a[href^="http"]')
+  const links = container.querySelectorAll('a')
   links.forEach(link => {
-    link.classList.add(
-      'text-blue-400', 'hover:text-blue-300', 'transition-colors',
-      'underline', 'decoration-blue-400/30', 'hover:decoration-blue-300',
-      'underline-offset-2'
-    )
-    
-    if (!link.querySelector('.external-icon')) {
-      const icon = document.createElement('i')
-      icon.className = 'fa fa-external-link external-icon ml-1 text-xs opacity-70'
-      link.appendChild(icon)
+    const href = link.getAttribute('href')
+    if (href && href.startsWith('http') && !href.includes(window.location.hostname)) {
+      link.setAttribute('target', '_blank')
+      link.setAttribute('rel', 'noopener noreferrer')
+      
+      if (!link.classList.contains('external-link')) {
+        link.classList.add('external-link')
+        const icon = document.createElement('span')
+        icon.className = 'inline-block ml-1 text-xs opacity-70'
+        icon.innerHTML = '<i class="fa fa-external-link-alt"></i>'
+        link.appendChild(icon)
+      }
     }
   })
 }

@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4 animate-fadeIn backdrop-blur-sm">
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4 animate-fadeIn backdrop-blur-sm" @click="handleOverlayClick">
       <div 
         class="glass-card rounded-2xl lg:rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col animate-fadeInUp shadow-2xl"
         @click.stop
@@ -25,55 +25,6 @@
               </div>
             
             <div class="flex items-center space-x-2 lg:space-x-3 flex-shrink-0">
-                <!-- 导出按钮 - 添加在标题区域 -->
-                <div class="relative mr-2 flex-shrink-0">
-                  <button
-                    @click="showHeaderExportMenu = !showHeaderExportMenu"
-                    class="btn-icon"
-                    title="导出报告"
-                  >
-                    <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                    </svg>
-                  </button>
-                  
-                  <!-- 导出菜单 -->
-                  <div v-if="showHeaderExportMenu" class="absolute top-full right-0 mt-2 w-40 glass-card rounded-xl py-2 shadow-xl z-50">
-                    <button @click="exportReport('md')" class="export-menu-item">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                      </svg>
-                      Markdown
-                    </button>
-                    <button @click="exportReport('html')" class="export-menu-item">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                      </svg>
-                      HTML
-                    </button>
-                    <button @click="exportReport('json')" class="export-menu-item">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
-                      </svg>
-                      JSON
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- 全屏按钮 -->
-              <button
-                @click="toggleFullscreen"
-                class="btn-icon hidden lg:flex"
-                title="全屏模式"
-              >
-                <svg v-if="!isFullscreen" class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                </svg>
-                <svg v-else class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M15 9v-4.5M15 9h4.5M15 9l5.25-5.25M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 15v4.5M15 15h4.5m0 0l5.25 5.25"></path>
-                </svg>
-              </button>
-              
               <!-- 关闭按钮 -->
               <button
                 @click="$emit('close')"
@@ -132,16 +83,7 @@
               </div>
             </div>
             
-            <!-- 快速导航 -->
-            <div class="mb-6 lg:mb-8 p-3 lg:p-4 bg-slate-800/30 rounded-xl border border-slate-600/30">
-              <div class="flex items-center mb-3">
-                <i class="fa fa-compass mr-2 text-blue-400"></i>
-                <span class="font-semibold text-slate-200 text-sm lg:text-base">快速导航</span>
-              </div>
-              <div class="flex flex-wrap gap-1 lg:gap-2" id="quick-nav">
-                <!-- 导航链接将由JavaScript生成 -->
-              </div>
-            </div>
+
             
             <!-- Markdown 内容 -->
             <div 
@@ -151,17 +93,17 @@
             ></div>
           </div>
           
-          <!-- 返回顶部按钮 -->
-          <button 
+          <!-- 返回顶部按钮 - 移至左下角避免与导出按钮重叠 -->
+          <!-- <button 
             v-show="showBackToTop"
             @click="scrollToTop"
-            class="fixed bottom-8 right-8 btn-primary w-12 h-12 rounded-full shadow-lg animate-bounce-gentle z-10"
+            class="fixed bottom-8 left-8 btn-primary w-12 h-12 rounded-full shadow-lg animate-bounce-gentle z-10"
             title="返回顶部"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
             </svg>
-          </button>
+          </button> -->
         </main>
 
         <!-- 模态框底部 -->
@@ -191,24 +133,14 @@
             <div class="flex flex-wrap gap-2 lg:gap-3 w-full lg:w-auto">
               <button
                 @click="copyToClipboard"
-                class="btn-secondary flex-1 lg:flex-none text-xs lg:text-sm"
+                :class="['btn-secondary flex-1 lg:flex-none text-xs lg:text-sm transition-colors duration-300', isCopying ? 'bg-green-600/80 border-green-500/50' : '']"
                 title="复制到剪贴板"
+                :disabled="isCopying"
               >
                 <svg class="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                 </svg>
-                复制
-              </button>
-              
-              <button
-                @click="shareReport"
-                class="btn-secondary flex-1 lg:flex-none text-xs lg:text-sm"
-                title="分享报告"
-              >
-                <svg class="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
-                </svg>
-                分享
+                {{ isCopying ? '已复制!' : '复制' }}
               </button>
               
               <div class="relative" ref="exportDropdown">
@@ -240,18 +172,6 @@
                     </svg>
                     HTML 格式
                   </button>
-                  <button @click="exportReport('pdf')" class="export-menu-item">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                    PDF 格式
-                  </button>
-                  <button @click="exportReport('json')" class="export-menu-item">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
-                    </svg>
-                    JSON 格式
-                  </button>
                 </div>
               </div>
             </div>
@@ -264,8 +184,68 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
-import { renderMarkdown, enhanceMarkdownDisplay } from '../utils/markdown'
 import type { Report } from '../api/reports'
+import MarkdownIt from 'markdown-it'
+
+// 创建基础MarkdownIt实例，简化插件配置以确保稳定性
+const md = new MarkdownIt({
+  html: true,
+  xhtmlOut: false,
+  breaks: true,
+  langPrefix: 'language-',
+  linkify: true,
+  typographer: true
+})
+
+// 渲染Markdown内容
+function renderMarkdown(content: string): string {
+  return md.render(content)
+}
+
+// 增强Markdown显示的函数
+function enhanceMarkdownDisplay(container: HTMLElement): void {
+  // 添加代码块复制功能
+  const codeBlocks = container.querySelectorAll('pre code')
+  codeBlocks.forEach(block => {
+    const pre = block.parentElement
+    if (!pre) return
+    
+    const button = document.createElement('button')
+    button.className = 'absolute top-2 right-2 bg-slate-700/80 hover:bg-slate-600/80 text-white rounded px-2 py-1 text-xs transition-colors'
+    button.textContent = '复制'
+    button.onclick = () => {
+      navigator.clipboard.writeText(block.textContent || '')
+        .then(() => {
+          const originalText = button.textContent
+          button.textContent = '已复制!'
+          button.classList.add('bg-green-600/80')
+          setTimeout(() => {
+            button.textContent = originalText
+            button.classList.remove('bg-green-600/80')
+          }, 2000)
+        })
+        .catch(err => {
+          console.error('复制失败:', err)
+          button.textContent = '复制失败'
+          button.classList.add('bg-red-600/80')
+          setTimeout(() => {
+            button.textContent = '复制'
+            button.classList.remove('bg-red-600/80')
+          }, 2000)
+        })
+    }
+    
+    pre.style.position = 'relative'
+    pre.appendChild(button)
+  })
+  
+  // 添加链接打开新窗口的target属性
+  const links = container.querySelectorAll('a:not([target])')
+  links.forEach(link => {
+    link.setAttribute('target', '_blank')
+    link.setAttribute('rel', 'noopener noreferrer')
+  })
+}
 
 // Props
 const props = defineProps<{
@@ -280,11 +260,10 @@ const emit = defineEmits<{
 // 响应式数据
 const loading = ref(false)
 const markdownContainer = ref<HTMLElement>()
+const isCopying = ref(false)
 const contentContainer = ref<HTMLElement>()
 const exportDropdown = ref<HTMLElement>()
 const showExportMenu = ref(false)
-const showHeaderExportMenu = ref(false)
-const isFullscreen = ref(false)
 const scrollProgress = ref(0)
 const showBackToTop = ref(false)
 
@@ -310,7 +289,6 @@ onMounted(async () => {
   await nextTick()
   if (markdownContainer.value) {
     enhanceMarkdownDisplay(markdownContainer.value)
-    generateQuickNavigation()
   }
   
   // 添加事件监听器
@@ -328,38 +306,40 @@ onUnmounted(() => {
   
   // 恢复背景滚动
   document.body.style.overflow = ''
-  
-  // 退出全屏模式
-  if (isFullscreen.value) {
-    exitFullscreen()
-  }
 })
 
 // 事件处理函数
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
     emit('close')
-  } else if (e.key === 'F11') {
-    e.preventDefault()
-    toggleFullscreen()
   }
 }
 
+// 点击背景遮罩层关闭模态框
+function handleOverlayClick() {
+  emit('close')
+}
+
 function handleOutsideClick(e: Event) {
+  // 处理导出菜单关闭
   if (showExportMenu.value && exportDropdown.value && !exportDropdown.value.contains(e.target as Node)) {
     showExportMenu.value = false
   }
   
-  // 关闭标题区域的导出菜单
-  const headerExportButton = document.querySelector('[title="导出报告"]')
-  const headerExportMenu = document.querySelector('.relative.mr-2 > div')
+  // 处理点击模态框外部关闭整个模态框
+  const targetElement = e.target as HTMLElement
   
-  if (showHeaderExportMenu.value && 
-      headerExportButton && 
-      headerExportMenu && 
-      !headerExportButton.contains(e.target as Node) && 
-      !headerExportMenu.contains(e.target as Node)) {
-    showHeaderExportMenu.value = false
+  // 获取模态框背景遮罩层
+  const modalOverlay = document.querySelector('.fixed.inset-0.bg-black\/80')
+  
+  // 获取模态框内容区域
+  const modalContent = document.querySelector('.glass-card.rounded-2xl')
+  
+  // 当点击的是背景遮罩层，且不是点击在内容区域上时，关闭模态框
+  if (modalOverlay && modalContent && 
+      (targetElement === modalOverlay || modalOverlay.contains(targetElement)) && 
+      !modalContent.contains(targetElement)) {
+    emit('close')
   }
 }
 
@@ -383,27 +363,7 @@ function scrollToTop() {
   }
 }
 
-function toggleFullscreen() {
-  if (!isFullscreen.value) {
-    enterFullscreen()
-  } else {
-    exitFullscreen()
-  }
-}
 
-function enterFullscreen() {
-  if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen()
-    isFullscreen.value = true
-  }
-}
-
-function exitFullscreen() {
-  if (document.exitFullscreen && document.fullscreenElement) {
-    document.exitFullscreen()
-    isFullscreen.value = false
-  }
-}
 // 工具函数
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
@@ -415,7 +375,7 @@ function formatDate(dateStr: string): string {
   })
 }
 
-function exportReport(format: 'md' | 'html' | 'pdf' | 'json' = 'md') {
+function exportReport(format: 'md' | 'html' = 'md') {
   if (!props.report.content) return
   
   let content: string
@@ -432,9 +392,20 @@ function exportReport(format: 'md' | 'html' | 'pdf' | 'json' = 'md') {
   <title>GitHub 热门项目报告 - ${props.report.date}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-    h1, h2, h3 { color: #2c3e50; }
-    code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+    h1, h2, h3, h4, h5, h6 { color: #2c3e50; margin-top: 1.5em; margin-bottom: 0.5em; }
+    p { margin: 1em 0; }
+    code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; }
     pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    a { color: #3498db; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    blockquote { border-left: 4px solid #ddd; padding-left: 1em; margin: 1em 0; color: #666; }
+    ul, ol { margin: 1em 0; padding-left: 2em; }
+    li { margin: 0.5em 0; }
+    img { max-width: 100%; height: auto; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    th, td { padding: 8px 12px; border: 1px solid #ddd; text-align: left; }
+    th { background-color: #f4f4f4; }
   </style>
 </head>
 <body>
@@ -443,16 +414,6 @@ ${renderedContent.value}
 </html>`
       mimeType = 'text/html'
       extension = 'html'
-      break
-    case 'pdf':
-      // PDF 导出需要额外的库，这里先显示提示
-      alert('🚧 PDF 导出功能正在开发中，请使用浏览器的打印功能代替')
-      window.print()
-      return
-    case 'json':
-      content = JSON.stringify(props.report, null, 2)
-      mimeType = 'application/json'
-      extension = 'json'
       break
     default:
       content = props.report.content
@@ -479,93 +440,21 @@ async function copyToClipboard() {
   
   try {
     await navigator.clipboard.writeText(props.report.content)
-    // 显示成功提示（可以后续添加 toast 组件）
     console.log('📋 内容已复制到剪贴板')
+    
+    // 设置复制状态为成功
+    isCopying.value = true
+    
+    // 2秒后恢复原始状态
+    setTimeout(() => {
+      isCopying.value = false
+    }, 2000)
   } catch (err) {
     console.error('复制失败:', err)
+    
+    // 可以添加复制失败的处理逻辑，例如弹出错误提示
+    alert('复制失败，请重试')
   }
 }
 
-function shareReport() {
-  if (navigator.share) {
-    navigator.share({
-      title: `GitHub 热门项目报告 - ${props.report.date}`,
-      text: `查看 ${props.report.date} 的 GitHub 热门项目分析报告`,
-      url: window.location.href
-    })
-  } else {
-    // 降级方案：复制链接
-    copyToClipboard()
-  }
-}
-
-// 生成快速导航
-function generateQuickNavigation() {
-  if (!markdownContainer.value) return
-  
-  const headers = markdownContainer.value.querySelectorAll('h1, h2, h3, h4')
-  const quickNavContainer = document.getElementById('quick-nav')
-  
-  if (!quickNavContainer || headers.length === 0) return
-  
-  // 清空现有内容
-  quickNavContainer.innerHTML = ''
-  
-  headers.forEach((header, index) => {
-    const level = parseInt(header.tagName.charAt(1))
-    const text = header.textContent || ''
-    const id = `heading-${index}`
-    
-    // 为标题添加ID
-    header.id = id
-    
-    // 创建导航按钮
-    const navButton = document.createElement('button')
-    navButton.className = `text-xs px-3 py-1.5 rounded-lg transition-all duration-200 border ${
-      level === 1 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30' :
-      level === 2 ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/30' :
-      level === 3 ? 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30' :
-      'bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/30'
-    }`
-    navButton.textContent = text.length > 20 ? text.substring(0, 20) + '...' : text
-    navButton.title = text
-    
-    navButton.addEventListener('click', () => {
-      header.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      // 添加高亮效果
-      header.classList.add('highlight-flash')
-      setTimeout(() => {
-        header.classList.remove('highlight-flash')
-      }, 2000)
-    })
-    
-    quickNavContainer.appendChild(navButton)
-  })
-  
-  // 如果没有标题，隐藏导航区域
-  const navSection = quickNavContainer.closest('.mb-8') as HTMLElement | null
-  if (navSection) {
-    navSection.style.display = headers.length > 0 ? 'block' : 'none'
-  }
-}
-
-// 添加高亮动画样式
-function addHighlightStyles() {
-  const style = document.createElement('style')
-  style.textContent = `
-    .highlight-flash {
-      animation: highlight-flash 2s ease-in-out;
-    }
-    
-    @keyframes highlight-flash {
-      0% { background-color: rgba(59, 130, 246, 0.3); }
-      50% { background-color: rgba(59, 130, 246, 0.1); }
-      100% { background-color: transparent; }
-    }
-  `
-  document.head.appendChild(style)
-}
-
-// 在组件加载时添加样式
-addHighlightStyles()
 </script>

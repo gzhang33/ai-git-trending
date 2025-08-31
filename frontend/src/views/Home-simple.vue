@@ -542,64 +542,18 @@
       </div>
     </div>
     
-    <!-- 报告详情模态框 -->
-    <div v-if="showModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" @click="closeModal">
-      <div class="bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" @click.stop>
-        <!-- 模态框头部 -->
-        <div class="flex items-center justify-between p-6 border-b border-slate-600">
-          <h3 class="text-xl font-bold text-white">报告详情 - {{ currentReport?.date }}</h3>
-          <div class="flex items-center space-x-4">
-            <!-- Export Button -->
-            <div class="relative export-menu-wrapper">
-              <button @click="showExportMenu = !showExportMenu" class="text-slate-400 hover:text-white transition-colors" title="导出报告">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                </svg>
-              </button>
-              <!-- Export Menu -->
-              <div v-if="showExportMenu" class="absolute top-full right-0 mt-2 w-40 bg-slate-700/90 backdrop-blur-sm border border-slate-600 rounded-lg shadow-lg z-10 py-1">
-                <button @click="exportReport('md')" class="flex items-center w-full px-4 py-2 text-sm text-slate-200 hover:bg-slate-600/50 transition-colors">
-                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                  Markdown
-                </button>
-                <button @click="exportReport('html')" class="flex items-center w-full px-4 py-2 text-sm text-slate-200 hover:bg-slate-600/50 transition-colors">
-                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                  HTML
-                </button>
-              </div>
-            </div>
-            <!-- Close Button -->
-            <button @click="closeModal" class="text-slate-400 hover:text-white transition-colors">
-              <i class="fa fa-times text-xl"></i>
-            </button>
-          </div>
-        </div>
-        
-        <!-- 模态框内容 -->
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <div v-if="loadingContent" class="text-center py-12">
-            <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-slate-400">加载报告内容中...</p>
-          </div>
-          
-          <div v-else-if="reportError" class="text-center py-12">
-            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"></path>
-              </svg>
-            </div>
-            <div class="text-red-400 mb-4">{{ reportError }}</div>
-            <button @click="loadReportContent(currentReport?.date)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
-              重试
-            </button>
-          </div>
-          
-          <div v-else-if="renderedContent" class="markdown-content prose prose-invert max-w-none" v-html="renderedContent"></div>
-          
-          <div v-else class="text-center py-12">
-            <div class="text-slate-400">暂无内容</div>
-          </div>
-        </div>
+    <!-- 使用ReportModal组件显示报告详情 -->
+    <ReportModal 
+      v-if="showModal && currentReport"
+      :report="currentReport"
+      @close="closeModal"
+    />
+    
+    <!-- 加载提示 -->
+    <div v-if="loadingContent" class="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
+      <div class="bg-slate-800 rounded-xl p-6 flex flex-col items-center">
+        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-300">加载报告内容中...</p>
       </div>
     </div>
   </div>
@@ -609,6 +563,7 @@
 import { ref, onMounted, nextTick, computed, onUnmounted } from 'vue'
 import { getReports, reportApi, type Report } from '../api/reports'
 import { renderMarkdown, enhanceMarkdownDisplay } from '../utils/markdown-simple'
+import ReportModal from '../components/ReportModal.vue'
 
 // 响应式数据
 const reports = ref<Report[]>([])
@@ -636,7 +591,6 @@ const animatedStats = ref({
 const recentHotProjects = ref<any[]>([])
 
 // 菜单相关状态
-const showExportMenu = ref(false)
 const showTrendsModal = ref(false)
 const trendsData = ref<any>(null)
 const trendsLoading = ref(false)
@@ -826,20 +780,6 @@ async function loadReportContent(date?: string) {
     const report = await reportApi.getReportContent(date)
     reportContent.value = report.content || '暂无内容'
     
-    // 渲染Markdown内容
-    if (reportContent.value) {
-      console.log('🎨 渲染Markdown内容...')
-      renderedContent.value = renderMarkdown(reportContent.value)
-      
-      // 在下一个tick中增强显示效果
-      await nextTick()
-      const modalContent = document.querySelector('.markdown-content')
-      if (modalContent) {
-        console.log('✨ 增强显示效果...')
-        enhanceMarkdownDisplay(modalContent as HTMLElement)
-      }
-    }
-    
     console.log('✅ 报告内容加载成功')
   } catch (err: any) {
     reportError.value = err.message || '加载报告内容失败'
@@ -854,10 +794,14 @@ async function openReport(date: string) {
   console.log('🎯 点击报告卡片:', date)
   const report = reports.value.find(r => r.date === date)
   if (report) {
+    // 确保加载报告内容后再打开模态框
+    await loadReportContent(date)
+    
+    // 更新报告内容
+    report.content = reportContent.value || '' // 确保 content 不是 null/undefined
     currentReport.value = report
     showModal.value = true
-    console.log('📂 打开模态框，加载内容...')
-    await loadReportContent(date)
+    console.log('📂 打开报告模态框')
   } else {
     console.error('❌ 未找到报告:', date)
   }
@@ -896,56 +840,7 @@ function formatDateWeek(dateStr: string): string {
   })
 }
 
-// 导出报告
-function exportReport(format: 'md' | 'html') {
-  if (!currentReport.value || !reportContent.value) return
-
-  let content: string
-  let mimeType: string
-  let extension: string
-  
-  switch (format) {
-    case 'html':
-      content = `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub 热门项目报告 - ${currentReport.value.date}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-    h1, h2, h3 { color: #2c3e50; }
-    code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
-    pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
-  </style>
-</head>
-<body>
-${renderedContent.value}
-</body>
-</html>`
-      mimeType = 'text/html'
-      extension = 'html'
-      break
-    case 'md':
-    default:
-      content = reportContent.value
-      mimeType = 'text/markdown'
-      extension = 'md'
-  }
-  
-  const blob = new Blob([content], { type: `${mimeType};charset=utf-8` })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `github_trending_${currentReport.value.date}.${extension}`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-  
-  showExportMenu.value = false
-  console.log(`📥 报告已导出为 ${format.toUpperCase()} 格式`)
-}
+// 导出功能已移至ReportModal组件中实现
 
 // 组件挂载时获取数据
 onMounted(async () => {
@@ -1113,9 +1008,6 @@ function handleClickOutside(event: Event) {
   const target = event.target as Element
   if (!target.closest('.theme-switcher')) {
     showThemeMenu.value = false
-  }
-  if (!target.closest('.export-menu-wrapper')) {
-    showExportMenu.value = false
   }
 }
 </script>

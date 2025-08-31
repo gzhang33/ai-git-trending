@@ -67,7 +67,16 @@ def get_entity_summary(owner):
 
     summary = call_llm_with_retry(prompt, LLM_MODEL, 0.6)
     if summary:
-        return f"\n\n---\n\n### 👨‍💻 开发者/组织速览\n\n{summary}"
+        # 清理可能存在的多余的 markdown 代码块标记
+        summary = summary.strip()
+        if summary.startswith("```markdown"):
+            summary = summary[len("```markdown"):].strip()
+        if summary.startswith("```"):
+            summary = summary[len("```"):].strip()
+        if summary.endswith("```"):
+            summary = summary[:-len("```")].strip()
+        
+        return f"\n\n#### 👨‍💻 开发者/组织速览\n\n{summary}"
     
     logger.error(f"❌ Error generating entity summary for {owner}")
     return ""
@@ -75,6 +84,9 @@ def get_entity_summary(owner):
 def get_summary_for_single_project(project):
     logger.info(f"🧠 Analyzing project: {project['name']}...")
     prompt = SINGLE_PROJECT_PROMPT_TEMPLATE.format(**project)
+    
+    if 'readme_content' not in project:
+        project['readme_content'] = 'README content not available.'
     
     project_summary = call_llm_with_retry(prompt, LLM_MODEL, 0.7)
     if not project_summary:

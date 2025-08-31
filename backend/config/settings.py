@@ -27,6 +27,77 @@ TRENDING_DATE_RANGE = os.getenv('TRENDING_DATE_RANGE', 'daily').lower()
 GITHUB_TRENDING_URL = f"https://github.com/trending?since={TRENDING_DATE_RANGE}"
 
 SINGLE_PROJECT_PROMPT_TEMPLATE = """
+# 角色：顶级技术战略顾问 & 开源项目分析专家
+
+## 任务：基于项目元数据和 README 内容，生成一份全面的、具备战略高度的开源项目分析报告
+
+### 核心原则
+1.  **信息融合**: 将元数据（如星标数）与 README 中的信息（如项目目标、架构图）进行交叉验证和深度解读。
+2.  **洞察力是关键**: 不要总结，要分析。不要描述，要解读。
+3.  **结构化输出**: 严格遵循下方定义的 Markdown 格式，产出专业报告。
+
+### 1. 已知信息 (Input Data)
+
+#### 1.1. GitHub API 元数据
+- **项目名称**: `{name}`
+- **编程语言**: `{language}`
+- **项目描述**: `{description}`
+- **项目链接**: `{url}`
+- **各项指标**:
+    - 星标数: `{stars}` | Forks: `{forks}` | 贡献者: `{contributor_count}`
+    - Issue 状态: `{open_issues}` (开放)
+    - 创建日期: `{created_at}` | 最近更新: `{updated_at}`
+
+#### 1.2. 项目 README 内容
+```markdown
+{readme_content}
+````
+
+### 2. 你的分析报告 (Strictly Markdown Output)
+
+  - **风格**: 精准、客观、有深度，同时保持高度可读性。适当使用 Emoji 增强表达力。
+  - **指示**: 直接开始输出 Markdown 报告，不要任何前言或结语。
+
+-----
+
+### ✨ {name} ({stars}★) - 深度分析报告
+
+> **一句话总结 (Executive Summary)**: [精准概括项目的核心价值、目标用户和市场定位。]
+
+#### 🚀 价值主张 (Value Proposition)
+
+  - **解决了什么核心问题？**: [根据 README 和描述，清晰地指出项目旨在解决的那个最关键的“痛点”。]
+  - **为谁而设计？**: [分析项目的目标用户群体是谁？是前端开发者、数据科学家，还是运维工程师？]
+  - **为何与众不同 (Unique Selling Point)？**: [提炼出项目最独特的卖点。是性能、易用性、新范式，还是其他？]
+
+#### 💡 技术架构与实现亮点 (Technical Architecture)
+
+  - **核心架构解读**: [**根据 README 中的信息（可能包含架构图的 ASCII 描述或文字说明）**，解读其核心架构和工作原理。]
+  - **关键技术选择**: [分析其在技术选型上的关键决策。例如：为什么选择 Rust？为什么基于某个特定框架？并分析这些选择带来的利弊。]
+  - **代码示例解读 (Code Insight)**: [从 README 中挑选一段最能体现其特色的代码示例，并分析其设计之妙。]
+
+#### 📈 社区健康与生态系统 (Community & Ecosystem)
+
+  - **社区健康仪表盘**:
+      - **增长势头**: `星标数 {stars}` / `更新频率 {updated_at}` -> [解读这个增长速度和更新频率意味着什么？是爆发期还是稳定期？]
+      - **社区互动**: `开放 Issue 数 {open_issues}` / `贡献者数 {contributor_count}` -> [解读社区的健康状况。Issue 多是代表问题多还是讨论活跃？]
+  - **生态位分析**:
+      - **主要竞品**: [根据项目解决的问题，列出 1-2 个竞品。]
+      - **差异化竞争**: [分析 {name} 是如何通过不同的特性、性能或定位来与竞品区分开的。]
+
+#### 🛠️ 上手与应用 (Adoption & Application)
+
+  - **学习曲线评估**: [根据 README 的文档质量和示例丰富度，评估新用户的上手难度（低/中/高）。]
+  - **最佳实践场景**: [明确指出最能发挥该项目价值的 2-3 个应用场景。]
+  - **潜在风险与避坑指南**: [指出在实际应用中可能遇到的坑，或需要注意的配置、依赖问题。]
+
+#### 🔗 项目链接
+
+  - **GitHub**: [{name}](https://www.google.com/search?q=%7Burl%7D)
+
+"""
+
+SINGLE_PROJECT_PROMPT_TEMPLATE_CACHE = """
 # 角色：资深技术分析师与博主
 
 ## 任务：对以下这个 GitHub 项目进行一次深刻且生动的单点分析

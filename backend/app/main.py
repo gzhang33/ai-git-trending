@@ -32,8 +32,6 @@ def job():
     
     logger.info(f"✅ Successfully ingested {len(all_trending_repos)} snapshots into the database.")
 
-    # --- The summarization logic remains, but uses the new DB methods ---
-    
     # Get project names that have been summarized recently
     existing_project_names = db.get_all_summarized_project_names()
     
@@ -69,3 +67,4 @@ def job():
             logger.info(f"💾 Successfully saved report for {len(repos_to_summarize)} projects.")
 
     logger.info(f"✅ Job finished at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    

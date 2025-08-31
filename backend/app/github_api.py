@@ -48,6 +48,7 @@ def get_repo_details(repo_name):
         elif contrib_response.ok:
              contrib_count = len(contrib_response.json())
 
+        readme_content = get_readme_content(repo_name)
 
         return {
             "stars": data.get("stargazers_count", 0),
@@ -59,11 +60,53 @@ def get_repo_details(repo_name):
             "description": data.get("description") or "No description provided.",
             "language": data.get("language", "N/A"),
             "tags": data.get("topics", []),  # Extract tags
-            "contributor_count": contrib_count
+            "contributor_count": contrib_count,
+            "readme_content": readme_content
         }
     except requests.RequestException as e:
         logger.error(f"❌ Error fetching repo details for {repo_name} from GitHub API: {e}")
         return None
+def get_readme_content(repo_name):
+    """
+    Fetches the content of the README.md file for a repository.
+    """
+    if not GITHUB_API_TOKEN:
+        logger.warning(f"⚠️ GitHub API token not configured. Skipping README fetching for {repo_name}.")
+        return "README content not available."
+
+    try:
+        owner, repo = repo_name.split('/')
+    except ValueError:
+        logger.error(f"❌ Invalid repo name format for README fetching: {repo_name}.")
+        return "README content not available."
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/readme"
+    headers = {
+        "Authorization": f"Bearer {GITHUB_API_TOKEN}",
+        "Accept": "application/vnd.github.v3.raw", # 使用 .raw 格式直接获取原始 Markdown 内容
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        if response.status_code == 404:
+            logger.warning(f"🤔 No README file found for {repo_name}.")
+            return "No README file found for this project."
+        
+        response.raise_for_status()
+        
+        readme_text = response.text
+        max_length = 100000 # 限制在 100000 个字符左右
+        if len(readme_text) > max_length:
+            readme_text = readme_text[:max_length] + "\n\n... (README content truncated)"
+            logger.info(f"✂️ README for {repo_name} was truncated to {max_length} characters.")
+
+        return readme_text
+
+    except requests.RequestException as e:
+        logger.error(f"❌ Error fetching README for {repo_name}: {e}")
+        return f"Error fetching README: {e}"
+
 
 def get_entity_details(owner):
     """

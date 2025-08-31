@@ -62,7 +62,8 @@ def scrape_github_trending():
                 "updated_at": api_details.get("updated_at"),
                 "open_issues": api_details.get("open_issues", 0),
                 "watchers": api_details.get("watchers", 0),
-                "contributor_count": api_details.get("contributor_count", 0)
+                "contributor_count": api_details.get("contributor_count", 0),
+                "readme_content": api_details.get("readme_content", "")
             }
         else:
             # Fallback to scraped data if API fails
