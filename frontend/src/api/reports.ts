@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios'
 
 // 根据环境变量或开发/生产环境自动选择API地址
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 // 创建axios实例并配置
 const api = axios.create({

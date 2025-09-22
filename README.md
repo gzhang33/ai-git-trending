@@ -52,9 +52,10 @@ cd ai-git-trending
 
 ### 2. 配置环境变量
 
-复制 `.env.example` 文件为 `.env`，并填入您的 LLM 服务凭证：
+项目根目录提供了一个 `.env` 文件模板。请复制该模板并填入您的凭证，`docker-compose` 将会自动加载此文件。
 ```bash
-cp .env.example .env
+# 注意：在之前的步骤中，我们已经创建了 .env 文件
+# 如果您是全新开始，请执行 cp .env.example .env
 ```
 编辑 `.env` 文件：
 ```env
@@ -62,55 +63,22 @@ cp .env.example .env
 LLM_API_KEY="sk-your_api_key_here"
 LLM_BASE_URL="https://api.openai.com/v1" # 根据您的服务商修改
 LLM_MODEL="gpt-4-turbo" # 可选，默认为 gpt-4-turbo
+GITHUB_API_TOKEN="" # 建议填入以获取更详细数据
 ```
 
 ### 3. 运行项目
 
-#### 方式一：使用 Docker (推荐)
+#### 方式一：使用 Docker Compose (推荐)
 
-确保您已安装 Docker，然后执行：
+确保您已安装 Docker 和 Docker Compose，然后在项目根目录执行：
 ```bash
-# 构建镜像
-docker build -t trending-reporter .
-
-# 运行容器
-docker run --env-file .env -p 5000:5000 trending-reporter
+docker-compose up --build
 ```
+服务启动后，可以通过 `http://localhost:8080` 访问前端界面。
 
 #### 方式二：本地运行
 
-安装依赖：
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-启动后端服务（统一启动入口）：
-```bash
-# 运行完整服务（Web API + 定时任务）- 推荐
-cd backend
-python app.py
-
-# 仅运行Web API服务（用于前端开发）
-python app.py --mode web --debug
-
-# 仅运行定时报告生成器
-python app.py --mode reporter
-
-# 自定义端口和地址
-python app.py --host 0.0.0.0 --port 8080 --debug
-```
-
-启动前端服务（如需前端界面）：
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-访问地址：
-- **后端API**: `http://127.0.0.1:5001`
-- **前端界面**: `http://127.0.0.1:5173`
+请参考 `backend/README.md` 和 `frontend/README.md` 中的说明进行本地开发和运行。
 
 ## ⚙️ 详细配置
 
@@ -129,6 +97,17 @@ npm run dev
 
 - `SINGLE_PROJECT_PROMPT_TEMPLATE`: 单个项目分析的 Prompt。
 - `OVERVIEW_PROMPT_TEMPLATE`: 报告开篇导语的 Prompt。
+
+## v1.1 更新说明 (2025-09-22)
+
+本次更新主要解决了原始项目无法通过 Docker 启动的问题，并对项目结构进行了优化，使其更易于部署和使用。
+
+-   **引入 Docker Compose**: 使用 `docker-compose.yml` 对前后端服务进行统一编排，实现了真正的一键启动。
+-   **修复 Docker 构建失败**: 彻底解决了因缺少 `Dockerfile` 导致的构建错误。
+-   **前后端分离部署**: 为前端和后端分别创建了独立的 `Dockerfile`，并使用 Nginx 作为前端的 Web 服务器，同时配置了 API 反向代理。
+-   **修复数据库路径问题**: 修正了在 Docker 容器中因路径计算错误而无法创建和访问数据库的问题。
+-   **修复 LLM 调用错误**: 修复了因 `temperature` 参数与部分新模型不兼容而导致的 API 调用失败问题。
+-   **统一环境变量管理**: 将所有必要的环境变量统一到根目录的 `.env` 文件中，方便 `docker-compose` 读取和管理。
 
 ## 公众号
 

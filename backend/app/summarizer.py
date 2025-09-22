@@ -65,7 +65,7 @@ def get_entity_summary(owner):
         main_languages=main_languages
     )
 
-    summary = call_llm_with_retry(prompt, LLM_MODEL, 0.6)
+    summary = call_llm_with_retry(prompt, LLM_MODEL, 1.0)
     if summary:
         # 清理可能存在的多余的 markdown 代码块标记
         summary = summary.strip()
@@ -88,7 +88,7 @@ def get_summary_for_single_project(project):
     if 'readme_content' not in project:
         project['readme_content'] = 'README content not available.'
     
-    project_summary = call_llm_with_retry(prompt, LLM_MODEL, 0.7)
+    project_summary = call_llm_with_retry(prompt, LLM_MODEL, 1.0)
     if not project_summary:
         logger.error(f"❌ Error calling LLM API for {project['name']}: Failed after retries.")
         return None
@@ -106,7 +106,7 @@ def get_overview_intro(projects):
     project_details = "\n".join([f"- {p['name']}: {p.get('description', 'No description')}" for p in projects])
     prompt = OVERVIEW_PROMPT_TEMPLATE.format(project_details=project_details)
     
-    overview = call_llm_with_retry(prompt, LLM_MODEL, 0.8)
+    overview = call_llm_with_retry(prompt, LLM_MODEL, 1.0)
     if overview:
         return overview
         

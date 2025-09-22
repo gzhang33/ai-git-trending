@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 # 获取项目根目录路径
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 load_dotenv()
 
