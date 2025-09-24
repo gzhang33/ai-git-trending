@@ -240,13 +240,33 @@
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div 
-              v-for="(project, index) in recentHotProjects.slice(0, 6)" 
-              :key="index" 
-              class="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30 hover:border-blue-400/50 transition-all duration-200"
+            <div
+              v-for="(project, index) in recentHotProjects.slice(0, 6)"
+              :key="index"
+              class="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30 hover:border-blue-400/50 transition-all duration-200 group cursor-pointer"
             >
               <div class="flex items-start justify-between mb-2">
-                <h4 class="font-medium text-white text-sm truncate flex-1">{{ project.name }}</h4>
+                <div class="flex-1 min-w-0">
+                  <a
+                    v-if="project.url"
+                    :href="project.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-blue-300 hover:text-blue-200 transition-colors flex items-center space-x-2 mb-1 group-hover:bg-blue-500/10 p-1 rounded"
+                    @click.stop
+                  >
+                    <span class="text-sm truncate flex-1">{{ project.name }}</span>
+                    <svg
+                      class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path>
+                      <path d="M5 5a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2v-2a1 1 0 10-2 0v2H5V7h2a1 1 0 000-2H5z"></path>
+                    </svg>
+                  </a>
+                  <span v-else class="font-semibold text-white text-sm truncate">{{ project.name }} (无URL)</span>
+                </div>
                 <div class="flex items-center space-x-1 text-yellow-400 text-xs ml-2">
                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
@@ -741,6 +761,13 @@ async function fetchRecentHotProjects() {
     if (response.ok) {
       const data = await response.json()
       recentHotProjects.value = data.most_frequent_projects || []
+
+      // 添加调试信息
+      console.log('🔍 热门项目数据:', recentHotProjects.value)
+      console.log('🔍 第一个项目数据:', recentHotProjects.value[0])
+      if (recentHotProjects.value.length > 0) {
+        console.log('🔍 项目URL示例:', recentHotProjects.value[0].url)
+      }
     }
   } catch (err) {
     console.error('❌ 获取热门项目失败:', err)
@@ -1107,6 +1134,9 @@ function handleClickOutside(event: Event) {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* 标准属性（未来浏览器支持时） */
+  line-clamp: 2;
+  box-orient: vertical;
 }
 
 /* 数字动画 */
@@ -1138,6 +1168,33 @@ function handleClickOutside(event: Event) {
 
 .hover-gradient:hover::before {
   left: 100%;
+}
+
+/* 项目卡片悬停效果增强 */
+.group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+/* 确保链接悬停效果正常工作 */
+.group:hover a {
+  transform: none !important;
+}
+
+/* 外部链接图标动画 */
+.group:hover .group-hover\:opacity-100 {
+  animation: fadeInScale 0.3s ease-out forwards;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* 主题样式 */
